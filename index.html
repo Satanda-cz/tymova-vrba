@@ -62,7 +62,7 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
 .cell-empty{font-size:9px;color:#CBD5E1;margin-top:4px;font-style:italic;}
 .cell-backups{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;}
 .backup-dot{width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;}
-.sel-toolbar{display:flex;align-items:center;gap:10px;background:var(--cs-blue);color:#fff;border-radius:12px;padding:10px 16px;margin-bottom:12px;flex-wrap:wrap;animation:slideIn 0.2s ease;}
+.sel-toolbar{display:flex;align-items:center;gap:10px;background:var(--cs-blue);color:#fff;border-radius:12px;padding:10px 16px;margin-bottom:0;flex-wrap:wrap;animation:slideIn 0.2s ease;}
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
 .sel-info{font-size:13px;font-weight:600;flex:1;}
 .sel-hint{font-size:11px;opacity:0.75;}
@@ -236,6 +236,15 @@ function App(){
   },[]);
 
   useEffect(()=>{
+    if(isMobile&&!loginScreen){
+      setTimeout(()=>{
+        const el=document.getElementById("today-row");
+        if(el)el.scrollIntoView({behavior:"smooth",block:"center"});
+      },300);
+    }
+  },[isMobile,loginScreen]);
+
+  useEffect(()=>{
     const n=localStorage.getItem("vrba_name");
     const p=localStorage.getItem("vrba_pass");
     if(n)setLoginInput(n);
@@ -249,19 +258,8 @@ function App(){
     catch(e){console.error(e);}
     finally{setLoading(false);}
   }
-
-  async function persist(key,value){
-    setSaving(true);
-    try{await dbSet(key,value);}
-    catch(e){console.error(e);}
-    setSaving(false);
-  }
-  async function remove(key){
-    setSaving(true);
-    try{await dbDel(key);}
-    catch(e){console.error(e);}
-    setSaving(false);
-  }
+  async function persist(key,value){setSaving(true);try{await dbSet(key,value);}catch(e){}setSaving(false);}
+  async function remove(key){setSaving(true);try{await dbDel(key);}catch(e){}setSaving(false);}
 
   const prevMonth=()=>{if(curMonth===0){setCurYear(y=>y-1);setCurMonth(11);}else setCurMonth(m=>m-1);};
   const nextMonth=()=>{if(curMonth===11){setCurYear(y=>y+1);setCurMonth(0);}else setCurMonth(m=>m+1);};
@@ -345,18 +343,18 @@ function App(){
           <div className="modal-drag"></div>
           <div className="modal-header">
             <div>
-              {isMulti ? (
+              {isMulti?(
                 <>
                   <div className="modal-date">Hromadná úprava</div>
                   <span className="type-badge multi">📅 {modal.keys.length} dní</span>
                   <div className="modal-date-sub">{sortedKeys.map(k=>{const[,mm,dd]=k.split("-");return`${parseInt(dd)}.${parseInt(mm)}.`;}).join("  ·  ")}</div>
                 </>
-              ) : (()=>{
+              ):(()=>{
                 const [ky,km,kd]=modal.keys[0].split("-").map(Number);
                 const type=getDayType(ky,km-1,kd);
                 const hn=getH(ky)[modal.keys[0]];
                 const label=type==="holiday"?hn:type==="weekend"?"Víkend":"Všední den";
-                return (<><div className="modal-date">{kd}. {MONTHS[km-1]} {ky}</div><span className={`type-badge ${type}`}>{label}</span></>);
+                return(<><div className="modal-date">{kd}. {MONTHS[km-1]} {ky}</div><span className={`type-badge ${type}`}>{label}</span></>);
               })()}
             </div>
             <button className="close-btn" onClick={()=>setModal(null)}>✕</button>
@@ -367,7 +365,7 @@ function App(){
             <button className={`mode-tab${modalMode==="remove"?" active remove":""}`} onClick={()=>setModalMode("remove")}>🗑 {isMulti?"Smazat záznamy":"Smazat záznam"}</button>
           </div>
 
-          {modalMode==="write" && (
+          {modalMode==="write"&&(
             <>
               {isMulti&&overwrittenDays.length>0&&<div className="overwrite-warn">⚠️ {overwrittenDays.length} z vybraných dní již má záznam – bude přepsán.</div>}
               <div className="field">
@@ -375,16 +373,11 @@ function App(){
                 <div className="field-row">
                   {svcInput&&<Avatar name={svcInput} size={32}/>}
                   <div className="dropdown-wrap">
-                    <input className="inp" placeholder="Jméno..." value={svcInput}
-                      onChange={e=>setSvcInput(e.target.value)}
-                      onFocus={()=>setShowSvcDrop(true)}
-                      onBlur={()=>setTimeout(()=>setShowSvcDrop(false),150)}/>
+                    <input className="inp" placeholder="Jméno..." value={svcInput} onChange={e=>setSvcInput(e.target.value)} onFocus={()=>setShowSvcDrop(true)} onBlur={()=>setTimeout(()=>setShowSvcDrop(false),150)}/>
                     {showSvcDrop&&(
                       <div className="dropdown-list">
                         {teamWithMe.filter(n=>n.toLowerCase().includes(svcInput.toLowerCase())).map(n=>(
-                          <div key={n} className={`dropdown-item${svcInput===n?" active":""}`} onMouseDown={()=>{setSvcInput(n);setShowSvcDrop(false);}}>
-                            <Avatar name={n} size={20}/>{n}
-                          </div>
+                          <div key={n} className={`dropdown-item${svcInput===n?" active":""}`} onMouseDown={()=>{setSvcInput(n);setShowSvcDrop(false);}}><Avatar name={n} size={20}/>{n}</div>
                         ))}
                       </div>
                     )}
@@ -399,24 +392,17 @@ function App(){
                 <label className="field-label">K dispozici (záloha)</label>
                 {localBackup.length>0&&(
                   <div className="tags">
-                    {localBackup.map(n=>(
-                      <span key={n} className="tag"><Avatar name={n} size={16}/>{n}<button className="tag-x" onClick={()=>setLocalBackup(lb=>lb.filter(x=>x!==n))}>✕</button></span>
-                    ))}
+                    {localBackup.map(n=>(<span key={n} className="tag"><Avatar name={n} size={16}/>{n}<button className="tag-x" onClick={()=>setLocalBackup(lb=>lb.filter(x=>x!==n))}>✕</button></span>))}
                   </div>
                 )}
                 <div className="field-row">
                   <div className="dropdown-wrap">
-                    <input className="inp" placeholder="Jméno..." value={backupInput}
-                      onChange={e=>setBackupInput(e.target.value)}
-                      onFocus={()=>setShowBackupDrop(true)}
-                      onBlur={()=>setTimeout(()=>setShowBackupDrop(false),150)}
+                    <input className="inp" placeholder="Jméno..." value={backupInput} onChange={e=>setBackupInput(e.target.value)} onFocus={()=>setShowBackupDrop(true)} onBlur={()=>setTimeout(()=>setShowBackupDrop(false),150)}
                       onKeyDown={e=>{if(e.key==="Enter"&&backupInput.trim()){const ns=backupInput.split(",").map(s=>s.trim()).filter(Boolean);setLocalBackup(lb=>[...new Set([...lb,...ns])]);setBackupInput("");}}}/>
                     {showBackupDrop&&(
                       <div className="dropdown-list">
                         {teamWithMe.filter(n=>!localBackup.includes(n)&&n.toLowerCase().includes(backupInput.toLowerCase())).map(n=>(
-                          <div key={n} className="dropdown-item" onMouseDown={()=>{setLocalBackup(lb=>[...new Set([...lb,n])]);setBackupInput("");setShowBackupDrop(false);}}>
-                            <Avatar name={n} size={20}/>{n}
-                          </div>
+                          <div key={n} className="dropdown-item" onMouseDown={()=>{setLocalBackup(lb=>[...new Set([...lb,n])]);setBackupInput("");setShowBackupDrop(false);}}><Avatar name={n} size={20}/>{n}</div>
                         ))}
                       </div>
                     )}
@@ -441,7 +427,7 @@ function App(){
             </>
           )}
 
-          {modalMode==="remove" && (
+          {modalMode==="remove"&&(
             <>
               <div className="remove-actions">
                 <button className="remove-sel-btn" onClick={()=>setRemoveChecked(new Set(sortedKeys.filter(k=>data[k]?.service||data[k]?.backup?.length>0)))}>Vybrat vše s daty</button>
@@ -449,10 +435,8 @@ function App(){
               </div>
               <div className="remove-list">
                 {sortedKeys.map(k=>{
-                  const[,km,kd]=k.split("-");
-                  const rec=data[k];
-                  const hasData=!!(rec?.service||rec?.backup?.length>0);
-                  const checked=removeChecked.has(k);
+                  const[,km,kd]=k.split("-");const rec=data[k];
+                  const hasData=!!(rec?.service||rec?.backup?.length>0);const checked=removeChecked.has(k);
                   return(
                     <div key={k} className={`remove-row${hasData?" has-data":""}`}>
                       <div className="remove-row-date">{parseInt(kd)}.{parseInt(km)}.</div>
@@ -480,6 +464,7 @@ function App(){
 
   return (
     <div className="root">
+      {/* HEADER */}
       <div className={`header${isMobile?" header-sticky":""}`}>
         <div className="brand">
           <div className="brand-icon">
@@ -502,6 +487,7 @@ function App(){
         </div>
       </div>
 
+      {/* LEGEND */}
       <div className="legend">
         <span><span className="legend-dot" style={{background:"#FDEAEA",border:"1px solid #F5B8BF"}}></span>Státní svátek</span>
         <span><span className="legend-dot" style={{background:"#E8F1FA",border:"1px solid #B3D0ED"}}></span>Víkend</span>
@@ -509,23 +495,26 @@ function App(){
         {(saving||loading)&&<span className="status">{saving?"Ukládám…":"Načítám…"}</span>}
       </div>
 
-      {selecting ? (
-        <div className="sel-toolbar">
-          <div>
-            <div className="sel-info">Vybráno {selectedKeys.size} {selectedKeys.size===1?"den":selectedKeys.size>=2&&selectedKeys.size<=4?"dny":"dní"}</div>
-            <div className="sel-hint">Klikejte na dny pro výběr</div>
+      {/* TOOLBAR – sticky na mobilu */}
+      <div style={isMobile?{position:"sticky",top:66,zIndex:99,background:"var(--bg-page)",paddingBottom:8,marginBottom:4}:{marginBottom:10}}>
+        {selecting?(
+          <div className="sel-toolbar">
+            <div>
+              <div className="sel-info">Vybráno {selectedKeys.size} {selectedKeys.size===1?"den":selectedKeys.size>=2&&selectedKeys.size<=4?"dny":"dní"}</div>
+              <div className="sel-hint">Klikejte na dny pro výběr</div>
+            </div>
+            <button className="sel-act-btn" disabled={selectedKeys.size===0} onClick={()=>openDays([...selectedKeys])}>Upravit vybrané →</button>
+            <button className="sel-cancel-btn" onClick={cancelSelection}>Zrušit</button>
           </div>
-          <button className="sel-act-btn" disabled={selectedKeys.size===0} onClick={()=>openDays([...selectedKeys])}>Upravit vybrané →</button>
-          <button className="sel-cancel-btn" onClick={cancelSelection}>Zrušit</button>
-        </div>
-      ) : (
-        <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
-          <button className="today-btn" style={{background:"var(--cs-blue)",color:"#fff",border:"none",padding:"0 14px",height:34,fontSize:13,fontWeight:600}} onClick={()=>setSelecting(true)}>☑ Vybrat více dní</button>
-        </div>
-      )}
+        ):(
+          <div style={{display:"flex",justifyContent:"flex-end"}}>
+            <button className="today-btn" style={{background:"var(--cs-blue)",color:"#fff",border:"none",padding:"0 14px",height:34,fontSize:13,fontWeight:600}} onClick={()=>setSelecting(true)}>☑ Vybrat více dní</button>
+          </div>
+        )}
+      </div>
 
       {/* DESKTOP GRID */}
-      {!isMobile && (
+      {!isMobile&&(
         <>
           <div className="day-headers">
             {DAYS.map((dn,i)=><div key={dn} className={`day-hdr${i>=5?" we":""}`}>{dn}</div>)}
@@ -533,14 +522,11 @@ function App(){
           <div className="cal-grid">
             {cells.map((d,i)=>{
               if(!d)return <div key={i} style={{minHeight:76}}></div>;
-              const key=toKey(curYear,curMonth,d);
-              const type=getDayType(curYear,curMonth,d);
-              const rec=data[key];
-              const isToday=key===todayKey;
-              const isSel=selectedKeys.has(key);
+              const key=toKey(curYear,curMonth,d);const type=getDayType(curYear,curMonth,d);const rec=data[key];
+              const isToday=key===todayKey;const isSel=selectedKeys.has(key);
               const isPast=new Date(curYear,curMonth,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
               const uncovered=!isSel&&type!=="holiday"&&!rec?.service;
-              return (
+              return(
                 <div key={key} className={`cell ${type}${isToday?" today":""}${isSel?" selected":""}${uncovered?" uncovered":""}${isPast?" past":""}`} onClick={()=>handleCellClick(key)}>
                   <span className={`cell-num${isToday?" tn":type==="holiday"?" hn":type==="weekend"?" wn":""}`}>{d}</span>
                   {type==="holiday"&&!isSel&&<span className="sv-badge">SV</span>}
@@ -560,19 +546,15 @@ function App(){
       )}
 
       {/* MOBILE LIST */}
-      {isMobile && (
+      {isMobile&&(
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>{
-            const key=toKey(curYear,curMonth,d);
-            const type=getDayType(curYear,curMonth,d);
-            const rec=data[key];
-            const isToday=key===todayKey;
-            const isSel=selectedKeys.has(key);
+            const key=toKey(curYear,curMonth,d);const type=getDayType(curYear,curMonth,d);const rec=data[key];
+            const isToday=key===todayKey;const isSel=selectedKeys.has(key);
             const isPast=new Date(curYear,curMonth,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
             const uncovered=!isSel&&type!=="holiday"&&!rec?.service;
             const dow=new Date(curYear,curMonth,d).getDay();
-            const holidayName=getH(curYear)[key];
-            const hasService=!!rec?.service;
+            const holidayName=getH(curYear)[key];const hasService=!!rec?.service;
             let borderColor="var(--border)";
             if(isSel)borderColor="var(--cs-blue)";
             else if(type==="holiday")borderColor="#F5B8BF";
@@ -583,8 +565,8 @@ function App(){
             else if(type==="holiday")bg="var(--cs-red-light)";
             else if(type==="weekend")bg="var(--cs-blue-light)";
             const dateColor=isToday?"var(--cs-blue)":type==="holiday"?"var(--cs-red)":type==="weekend"?"var(--cs-blue)":"var(--text-primary)";
-            return (
-              <div key={key} onClick={()=>handleCellClick(key)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,background:bg,border:`1.5px solid ${borderColor}`,opacity:isPast?0.45:1,filter:isPast?"grayscale(30%)":"none",cursor:"pointer",boxShadow:isToday?"0 0 0 3px rgba(0,101,189,0.15)":"none"}}>
+            return(
+              <div key={key} id={isToday?"today-row":undefined} onClick={()=>handleCellClick(key)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,background:bg,border:`1.5px solid ${borderColor}`,opacity:isPast?0.45:1,filter:isPast?"grayscale(30%)":"none",cursor:"pointer",boxShadow:isToday?"0 0 0 3px rgba(0,101,189,0.15)":"none"}}>
                 <div style={{minWidth:44,display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
                   <span style={{fontSize:24,fontWeight:800,lineHeight:1,color:dateColor}}>{d}</span>
                   <span style={{fontSize:11,fontWeight:600,color:"var(--text-muted)",textTransform:"uppercase",letterSpacing:"0.5px",marginTop:2}}>{DOW_LABELS[dow]}</span>
