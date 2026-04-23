@@ -143,30 +143,21 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 const SUPABASE_URL = "https://dddykrcegivdzqqritec.supabase.co";
 const SUPABASE_KEY = "sb_publishable_etculBl0KKWoDZRNf7LHUw_ITOrlLLn";
 const API = `${SUPABASE_URL}/rest/v1/schedule`;
-const HDR = {
-  "Content-Type":"application/json",
-  "apikey":SUPABASE_KEY,
-  "Authorization":`Bearer ${SUPABASE_KEY}`,
-  "Prefer":"resolution=merge-duplicates"
-};
+const HDR = {"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Prefer":"resolution=merge-duplicates"};
+
 async function dbGet(){
   const r=await fetch(`${API}?select=key,value`,{headers:HDR});
-  const rows=await r.json();
-  const out={};
+  const rows=await r.json();const out={};
   for(const row of rows){try{out[row.key]=JSON.parse(row.value);}catch{out[row.key]=row.value;}}
   return out;
 }
-async function dbSet(key,value){
-  await fetch(API,{method:"POST",headers:HDR,body:JSON.stringify({key,value:JSON.stringify(value)})});
-}
-async function dbDel(key){
-  await fetch(`${API}?key=eq.${encodeURIComponent(key)}`,{method:"DELETE",headers:HDR});
-}
+async function dbSet(key,value){await fetch(API,{method:"POST",headers:HDR,body:JSON.stringify({key,value:JSON.stringify(value)})});}
+async function dbDel(key){await fetch(`${API}?key=eq.${encodeURIComponent(key)}`,{method:"DELETE",headers:HDR});}
 
 function easterSunday(y){
   const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25);
@@ -179,12 +170,7 @@ function getCzHolidays(y){
   const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
   const add=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};
   const p=(m,d,name)=>[`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`,name];
-  return Object.fromEntries([
-    p(1,1,"Nový rok"),p(5,1,"Svátek práce"),p(5,8,"Den vítězství"),p(7,5,"Svátek věrozvěstů"),
-    p(7,6,"Den Jana Husa"),p(10,28,"Den Československa"),p(11,17,"Den svobody"),
-    p(12,24,"Štědrý den"),p(12,25,"1. vánoční svátek"),p(12,26,"2. vánoční svátek"),
-    [fmt(add(easter,-2)),"Velký pátek"],[fmt(add(easter,1)),"Velikonoční pondělí"],
-  ]);
+  return Object.fromEntries([p(1,1,"Nový rok"),p(5,1,"Svátek práce"),p(5,8,"Den vítězství"),p(7,5,"Svátek věrozvěstů"),p(7,6,"Den Jana Husa"),p(10,28,"Den Československa"),p(11,17,"Den svobody"),p(12,24,"Štědrý den"),p(12,25,"1. vánoční svátek"),p(12,26,"2. vánoční svátek"),[fmt(add(easter,-2)),"Velký pátek"],[fmt(add(easter,1)),"Velikonoční pondělí"]]);
 }
 const HCZ={};
 const getH=y=>{if(!HCZ[y])HCZ[y]=getCzHolidays(y);return HCZ[y];};
@@ -228,6 +214,8 @@ function App(){
   const [showSvcDrop,setShowSvcDrop]=useState(false);
   const [showBackupDrop,setShowBackupDrop]=useState(false);
   const [isMobile,setIsMobile]=useState(window.innerWidth<640);
+  const headerRef=useRef(null);
+  const [headerH,setHeaderH]=useState(0);
 
   useEffect(()=>{
     const fn=()=>setIsMobile(window.innerWidth<640);
@@ -236,28 +224,23 @@ function App(){
   },[]);
 
   useEffect(()=>{
+    if(headerRef.current)setHeaderH(headerRef.current.offsetHeight);
+  },[isMobile,loginScreen]);
+
+  useEffect(()=>{
     if(isMobile&&!loginScreen){
-      setTimeout(()=>{
-        const el=document.getElementById("today-row");
-        if(el)el.scrollIntoView({behavior:"smooth",block:"center"});
-      },300);
+      setTimeout(()=>{const el=document.getElementById("today-row");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});},300);
     }
   },[isMobile,loginScreen]);
 
   useEffect(()=>{
     const n=localStorage.getItem("vrba_name");
     const p=localStorage.getItem("vrba_pass");
-    if(n)setLoginInput(n);
-    if(p)setPassInput(p);
+    if(n)setLoginInput(n);if(p)setPassInput(p);
     loadData();
   },[]);
 
-  async function loadData(){
-    setLoading(true);
-    try{const d=await dbGet();setData(d);}
-    catch(e){console.error(e);}
-    finally{setLoading(false);}
-  }
+  async function loadData(){setLoading(true);try{const d=await dbGet();setData(d);}catch(e){}finally{setLoading(false);}}
   async function persist(key,value){setSaving(true);try{await dbSet(key,value);}catch(e){}setSaving(false);}
   async function remove(key){setSaving(true);try{await dbDel(key);}catch(e){}setSaving(false);}
 
@@ -267,8 +250,7 @@ function App(){
   function doLogin(){
     const n=loginInput.trim();if(!n)return;
     if(passInput.trim().toUpperCase()!=="DAR"){setPassError(true);return;}
-    localStorage.setItem("vrba_name",n);
-    localStorage.setItem("vrba_pass",passInput.trim());
+    localStorage.setItem("vrba_name",n);localStorage.setItem("vrba_pass",passInput.trim());
     setUserName(n);setLoginScreen(false);
   }
 
@@ -320,9 +302,7 @@ function App(){
   if(loginScreen) return (
     <div className="login-wrap">
       <div className="login-card">
-        <div className="login-icon">
-          <svg width="26" height="26" viewBox="0 0 28 28" fill="none"><polyline points="2,22 8,14 13,18 20,8 26,4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="26" cy="4" r="2.5" fill="#fff"/></svg>
-        </div>
+        <div className="login-icon"><svg width="26" height="26" viewBox="0 0 28 28" fill="none"><polyline points="2,22 8,14 13,18 20,8 26,4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="26" cy="4" r="2.5" fill="#fff"/></svg></div>
         <div className="login-title">Týmová vrba SR&BI</div>
         <div className="login-sub">Přihlaste se pro přístup ke kalendáři</div>
         <div className="divider"></div>
@@ -344,27 +324,20 @@ function App(){
           <div className="modal-header">
             <div>
               {isMulti?(
-                <>
-                  <div className="modal-date">Hromadná úprava</div>
-                  <span className="type-badge multi">📅 {modal.keys.length} dní</span>
-                  <div className="modal-date-sub">{sortedKeys.map(k=>{const[,mm,dd]=k.split("-");return`${parseInt(dd)}.${parseInt(mm)}.`;}).join("  ·  ")}</div>
-                </>
+                <><div className="modal-date">Hromadná úprava</div><span className="type-badge multi">📅 {modal.keys.length} dní</span><div className="modal-date-sub">{sortedKeys.map(k=>{const[,mm,dd]=k.split("-");return`${parseInt(dd)}.${parseInt(mm)}.`;}).join("  ·  ")}</div></>
               ):(()=>{
                 const [ky,km,kd]=modal.keys[0].split("-").map(Number);
                 const type=getDayType(ky,km-1,kd);
-                const hn=getH(ky)[modal.keys[0]];
-                const label=type==="holiday"?hn:type==="weekend"?"Víkend":"Všední den";
+                const label=type==="holiday"?getH(ky)[modal.keys[0]]:type==="weekend"?"Víkend":"Všední den";
                 return(<><div className="modal-date">{kd}. {MONTHS[km-1]} {ky}</div><span className={`type-badge ${type}`}>{label}</span></>);
               })()}
             </div>
             <button className="close-btn" onClick={()=>setModal(null)}>✕</button>
           </div>
-
           <div className="mode-tabs">
             <button className={`mode-tab${modalMode==="write"?" active write":""}`} onClick={()=>setModalMode("write")}>✏️ {isMulti?"Zapsat do dní":"Zapsat"}</button>
             <button className={`mode-tab${modalMode==="remove"?" active remove":""}`} onClick={()=>setModalMode("remove")}>🗑 {isMulti?"Smazat záznamy":"Smazat záznam"}</button>
           </div>
-
           {modalMode==="write"&&(
             <>
               {isMulti&&overwrittenDays.length>0&&<div className="overwrite-warn">⚠️ {overwrittenDays.length} z vybraných dní již má záznam – bude přepsán.</div>}
@@ -374,13 +347,7 @@ function App(){
                   {svcInput&&<Avatar name={svcInput} size={32}/>}
                   <div className="dropdown-wrap">
                     <input className="inp" placeholder="Jméno..." value={svcInput} onChange={e=>setSvcInput(e.target.value)} onFocus={()=>setShowSvcDrop(true)} onBlur={()=>setTimeout(()=>setShowSvcDrop(false),150)}/>
-                    {showSvcDrop&&(
-                      <div className="dropdown-list">
-                        {teamWithMe.filter(n=>n.toLowerCase().includes(svcInput.toLowerCase())).map(n=>(
-                          <div key={n} className={`dropdown-item${svcInput===n?" active":""}`} onMouseDown={()=>{setSvcInput(n);setShowSvcDrop(false);}}><Avatar name={n} size={20}/>{n}</div>
-                        ))}
-                      </div>
-                    )}
+                    {showSvcDrop&&(<div className="dropdown-list">{teamWithMe.filter(n=>n.toLowerCase().includes(svcInput.toLowerCase())).map(n=>(<div key={n} className={`dropdown-item${svcInput===n?" active":""}`} onMouseDown={()=>{setSvcInput(n);setShowSvcDrop(false);}}><Avatar name={n} size={20}/>{n}</div>))}</div>)}
                   </div>
                   <button className="btn-me" onClick={()=>setSvcInput(userName)}>+ Já</button>
                   {isMulti&&<button className="btn-trash" onClick={async()=>{const nd={...data};for(const key of modal.keys){if(nd[key]?.service===userName){const r={...nd[key]};delete r.service;nd[key]=r;await persist(key,r);}}setData(nd);}}>🗑</button>}
@@ -390,22 +357,11 @@ function App(){
               </div>
               <div className="field">
                 <label className="field-label">K dispozici (záloha)</label>
-                {localBackup.length>0&&(
-                  <div className="tags">
-                    {localBackup.map(n=>(<span key={n} className="tag"><Avatar name={n} size={16}/>{n}<button className="tag-x" onClick={()=>setLocalBackup(lb=>lb.filter(x=>x!==n))}>✕</button></span>))}
-                  </div>
-                )}
+                {localBackup.length>0&&(<div className="tags">{localBackup.map(n=>(<span key={n} className="tag"><Avatar name={n} size={16}/>{n}<button className="tag-x" onClick={()=>setLocalBackup(lb=>lb.filter(x=>x!==n))}>✕</button></span>))}</div>)}
                 <div className="field-row">
                   <div className="dropdown-wrap">
-                    <input className="inp" placeholder="Jméno..." value={backupInput} onChange={e=>setBackupInput(e.target.value)} onFocus={()=>setShowBackupDrop(true)} onBlur={()=>setTimeout(()=>setShowBackupDrop(false),150)}
-                      onKeyDown={e=>{if(e.key==="Enter"&&backupInput.trim()){const ns=backupInput.split(",").map(s=>s.trim()).filter(Boolean);setLocalBackup(lb=>[...new Set([...lb,...ns])]);setBackupInput("");}}}/>
-                    {showBackupDrop&&(
-                      <div className="dropdown-list">
-                        {teamWithMe.filter(n=>!localBackup.includes(n)&&n.toLowerCase().includes(backupInput.toLowerCase())).map(n=>(
-                          <div key={n} className="dropdown-item" onMouseDown={()=>{setLocalBackup(lb=>[...new Set([...lb,n])]);setBackupInput("");setShowBackupDrop(false);}}><Avatar name={n} size={20}/>{n}</div>
-                        ))}
-                      </div>
-                    )}
+                    <input className="inp" placeholder="Jméno..." value={backupInput} onChange={e=>setBackupInput(e.target.value)} onFocus={()=>setShowBackupDrop(true)} onBlur={()=>setTimeout(()=>setShowBackupDrop(false),150)} onKeyDown={e=>{if(e.key==="Enter"&&backupInput.trim()){const ns=backupInput.split(",").map(s=>s.trim()).filter(Boolean);setLocalBackup(lb=>[...new Set([...lb,...ns])]);setBackupInput("");}}}/>
+                    {showBackupDrop&&(<div className="dropdown-list">{teamWithMe.filter(n=>!localBackup.includes(n)&&n.toLowerCase().includes(backupInput.toLowerCase())).map(n=>(<div key={n} className="dropdown-item" onMouseDown={()=>{setLocalBackup(lb=>[...new Set([...lb,n])]);setBackupInput("");setShowBackupDrop(false);}}><Avatar name={n} size={20}/>{n}</div>))}</div>)}
                   </div>
                   <button className="btn-me" onClick={()=>{if(!localBackup.includes(userName))setLocalBackup(lb=>[...lb,userName]);}}>+ Já</button>
                   {isMulti&&<button className="btn-trash" onClick={async()=>{const nd={...data};for(const key of modal.keys){if(nd[key]?.backup){nd[key]={...nd[key],backup:nd[key].backup.filter(n=>n!==userName)};await persist(key,nd[key]);}}setData(nd);}}>🗑</button>}
@@ -426,7 +382,6 @@ function App(){
               </div>
             </>
           )}
-
           {modalMode==="remove"&&(
             <>
               <div className="remove-actions">
@@ -440,9 +395,7 @@ function App(){
                   return(
                     <div key={k} className={`remove-row${hasData?" has-data":""}`}>
                       <div className="remove-row-date">{parseInt(kd)}.{parseInt(km)}.</div>
-                      <div className="remove-row-content">
-                        {hasData?(<>{rec.service&&<div className="remove-row-svc"><Avatar name={rec.service} size={16}/>{rec.service}</div>}{rec.backup?.length>0&&<div style={{display:"flex",gap:3}}>{rec.backup.map(n=><span key={n} className="backup-dot" style={{background:colorFor(n)}} title={n}>{n[0].toUpperCase()}</span>)}</div>}</>):(<span className="remove-row-empty">prázdný den</span>)}
-                      </div>
+                      <div className="remove-row-content">{hasData?(<>{rec.service&&<div className="remove-row-svc"><Avatar name={rec.service} size={16}/>{rec.service}</div>}{rec.backup?.length>0&&<div style={{display:"flex",gap:3}}>{rec.backup.map(n=><span key={n} className="backup-dot" style={{background:colorFor(n)}} title={n}>{n[0].toUpperCase()}</span>)}</div>}</>):(<span className="remove-row-empty">prázdný den</span>)}</div>
                       <button className={`remove-check${checked?" checked":""}`} onClick={()=>setRemoveChecked(prev=>{const nx=new Set(prev);nx.has(k)?nx.delete(k):nx.add(k);return nx;})} disabled={!hasData}>{checked?"✓":""}</button>
                     </div>
                   );
@@ -464,12 +417,10 @@ function App(){
 
   return (
     <div className="root">
-      {/* HEADER */}
-      <div className={`header${isMobile?" header-sticky":""}`}>
+      {/* HEADER – sticky na mobilu, měřen přes ref */}
+      <div className={`header${isMobile?" header-sticky":""}`} ref={headerRef}>
         <div className="brand">
-          <div className="brand-icon">
-            <svg width="20" height="20" viewBox="0 0 28 28" fill="none"><polyline points="2,22 8,14 13,18 20,8 26,4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="26" cy="4" r="2.5" fill="#fff"/></svg>
-          </div>
+          <div className="brand-icon"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><polyline points="2,22 8,14 13,18 20,8 26,4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="26" cy="4" r="2.5" fill="#fff"/></svg></div>
           <span className="brand-name">Týmová vrba SR&BI</span>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
@@ -487,7 +438,7 @@ function App(){
         </div>
       </div>
 
-      {/* LEGEND */}
+      {/* LEGENDA */}
       <div className="legend">
         <span><span className="legend-dot" style={{background:"#FDEAEA",border:"1px solid #F5B8BF"}}></span>Státní svátek</span>
         <span><span className="legend-dot" style={{background:"#E8F1FA",border:"1px solid #B3D0ED"}}></span>Víkend</span>
@@ -495,8 +446,8 @@ function App(){
         {(saving||loading)&&<span className="status">{saving?"Ukládám…":"Načítám…"}</span>}
       </div>
 
-      {/* TOOLBAR – sticky na mobilu */}
-      <div style={isMobile?{position:"sticky",top:66,zIndex:99,background:"var(--bg-page)",paddingBottom:8,marginBottom:4}:{marginBottom:10}}>
+      {/* TOOLBAR – sticky na mobilu těsně pod headerem */}
+      <div style={isMobile?{position:"sticky",top:headerH,zIndex:99,background:"var(--bg-page)",paddingBottom:8,marginBottom:4}:{marginBottom:10}}>
         {selecting?(
           <div className="sel-toolbar">
             <div>
@@ -516,9 +467,7 @@ function App(){
       {/* DESKTOP GRID */}
       {!isMobile&&(
         <>
-          <div className="day-headers">
-            {DAYS.map((dn,i)=><div key={dn} className={`day-hdr${i>=5?" we":""}`}>{dn}</div>)}
-          </div>
+          <div className="day-headers">{DAYS.map((dn,i)=><div key={dn} className={`day-hdr${i>=5?" we":""}`}>{dn}</div>)}</div>
           <div className="cal-grid">
             {cells.map((d,i)=>{
               if(!d)return <div key={i} style={{minHeight:76}}></div>;
@@ -532,12 +481,8 @@ function App(){
                   {type==="holiday"&&!isSel&&<span className="sv-badge">SV</span>}
                   {isSel&&<span className="sel-check">✓</span>}
                   {rec?.service?(<div className="cell-svc"><Avatar name={rec.service} size={15}/><span className="cell-svc-name">{rec.service}</span></div>):(<div className="cell-empty">volný</div>)}
-                  {rec?.backup?.length>0&&(
-                    <div className="cell-backups">
-                      {rec.backup.slice(0,3).map(n=>(<span key={n} className="backup-dot" style={{background:colorFor(n)}} title={n}>{n[0].toUpperCase()}</span>))}
-                      {rec.backup.length>3&&<span style={{fontSize:9,color:"#94A3B8"}}>+{rec.backup.length-3}</span>}
-                    </div>
-                  )}
+                  {rec?.backup?.length>0&&(<div className="cell-backups">{rec.backup.slice(0,3).map(n=>(<span key={n} className="backup-dot" style={{background:colorFor(n)}} title={n}>{n[0].toUpperCase()}</span>))}{rec.backup.length>3&&<span style={{fontSize:9,color:"#94A3B8"}}>+{rec.backup.length-3}</span>}</div>)}
+                  {rec?.note&&<div style={{fontSize:9,color:"var(--text-muted)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>💬 {rec.note}</div>}
                 </div>
               );
             })}
@@ -575,7 +520,7 @@ function App(){
                 <div style={{flex:1,minWidth:0}}>
                   {holidayName&&<div style={{fontSize:11,fontWeight:600,color:"var(--cs-red)",marginBottom:3}}>{holidayName}</div>}
                   {hasService?(
-                    <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:rec?.backup?.length>0?5:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:rec?.backup?.length>0||rec?.note?5:0}}>
                       <Avatar name={rec.service} size={24}/>
                       <span style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>{rec.service}</span>
                     </div>
@@ -588,7 +533,7 @@ function App(){
                       {rec.backup.map(n=>(<span key={n} style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:12,fontWeight:600,color:"var(--cs-blue)"}}><Avatar name={n} size={14}/>{n}</span>))}
                     </div>
                   )}
-                  {rec?.note&&<div style={{fontSize:12,color:"var(--text-muted)",marginTop:3,fontStyle:"italic"}}>💬 {rec.note}</div>}
+                  {rec?.note&&<div style={{fontSize:12,color:"var(--text-muted)",marginTop:3,fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>💬 {rec.note}</div>}
                 </div>
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flexShrink:0}}>
                   {isSel&&<span style={{width:22,height:22,borderRadius:"50%",background:"var(--cs-blue)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"#fff",fontWeight:700}}>✓</span>}
