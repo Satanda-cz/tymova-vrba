@@ -19,64 +19,103 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
   --border:#DDE4ED;--bg-page:#F0F4F9;--bg-white:#FFFFFF;
 }
 .root{background:var(--bg-page);min-height:100vh;padding:16px 12px;}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
-.header-sticky{position:sticky;top:0;z-index:100;background:var(--bg-page);padding-bottom:8px;margin-bottom:8px;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
+.header-sticky{position:sticky;top:0;z-index:100;background:var(--bg-page);padding-bottom:6px;margin-bottom:6px;}
 .brand{display:flex;align-items:center;gap:10px;}
 .brand-icon{width:38px;height:38px;border-radius:10px;background:var(--cs-blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.brand-name{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px;}
+.brand-name{font-size:16px;font-weight:700;color:var(--text-primary);}
 .nav-row{display:flex;align-items:center;gap:6px;}
-.nav-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-white);color:var(--text-secondary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
-.nav-btn:hover{background:var(--cs-blue-light);border-color:var(--cs-blue-mid);color:var(--cs-blue);}
+.nav-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-white);color:var(--text-secondary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.nav-btn:hover{background:var(--cs-blue-light);color:var(--cs-blue);}
 .month-label{font-size:15px;font-weight:700;min-width:130px;text-align:center;color:var(--text-primary);}
-.today-btn{padding:0 12px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-white);color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-.today-btn:hover{background:var(--cs-blue-light);border-color:var(--cs-blue-mid);color:var(--cs-blue);}
+.today-btn{padding:0 12px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-white);color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.today-btn:hover{background:var(--cs-blue-light);color:var(--cs-blue);}
 .user-pill{display:flex;align-items:center;gap:7px;padding:5px 11px 5px 7px;border-radius:20px;background:var(--bg-white);border:1px solid var(--border);}
 .user-name{font-size:13px;font-weight:600;color:var(--text-primary);}
-.logout-btn{border:none;background:none;cursor:pointer;color:var(--text-muted);font-size:13px;padding:0;line-height:1;}
-.legend{display:flex;gap:14px;margin-bottom:12px;font-size:11px;color:var(--text-muted);flex-wrap:wrap;align-items:center;}
+.logout-btn{border:none;background:none;cursor:pointer;color:var(--text-muted);font-size:13px;padding:0;}
+.mode-switch{display:flex;gap:4px;background:var(--bg-white);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:14px;}
+.mode-switch-btn{flex:1;padding:8px 16px;border-radius:9px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;color:var(--text-muted);background:transparent;}
+.mode-switch-btn.active{background:var(--cs-blue);color:#fff;box-shadow:0 2px 8px rgba(0,101,189,0.3);}
+.legend{display:flex;gap:12px;margin-bottom:12px;font-size:11px;color:var(--text-muted);flex-wrap:wrap;align-items:center;}
 .legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:4px;flex-shrink:0;}
 .status{margin-left:auto;font-size:11px;color:var(--cs-blue);font-weight:600;}
 .day-headers{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px;}
 .day-hdr{text-align:center;font-size:10px;font-weight:700;color:var(--text-muted);padding:5px 0;letter-spacing:0.7px;text-transform:uppercase;}
 .day-hdr.we{color:var(--cs-blue-mid);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.cell{min-height:76px;border-radius:10px;padding:6px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden;background:var(--bg-white);border:1.5px solid var(--border);user-select:none;}
+.cell{min-height:80px;border-radius:10px;padding:6px;cursor:pointer;transition:all 0.15s;position:relative;background:var(--bg-white);border:1.5px solid var(--border);user-select:none;}
 .cell.weekend{background:var(--cs-blue-light);border-color:var(--cs-blue-mid);}
 .cell.holiday{background:var(--cs-red-light);border-color:#F5B8BF;}
 .cell.today{border:2px solid var(--cs-blue);box-shadow:0 0 0 3px rgba(0,101,189,0.12);}
 .cell.selected{border:2px solid var(--cs-blue);box-shadow:0 0 0 3px rgba(0,101,189,0.2);background:var(--cs-blue-light) !important;}
-.cell.uncovered{border-color:#F97316;box-shadow:0 0 0 2px rgba(249,115,22,0.12);}
+.cell.uncovered{border-color:#F97316;}
 .cell.past{opacity:0.45;filter:grayscale(30%);}
-.cell.past:hover{opacity:0.65;}
 .cell:hover{box-shadow:0 4px 14px rgba(0,101,189,0.15);border-color:var(--cs-blue-mid);transform:translateY(-1px);}
-.cell.holiday:hover{border-color:#E2001A;}
-.cell.uncovered:hover{border-color:#EA6500;}
-.cell-num{font-size:12px;font-weight:600;color:var(--text-muted);display:block;}
+.cell-top{display:flex;align-items:center;gap:3px;margin-bottom:3px;}
+.cell-num{font-size:12px;font-weight:600;color:var(--text-muted);}
 .cell-num.tn{color:var(--cs-blue);font-weight:700;}
 .cell-num.hn{color:var(--cs-red);}
 .cell-num.wn{color:var(--cs-blue);}
-.sv-badge{position:absolute;top:5px;right:5px;font-size:8px;font-weight:700;color:var(--cs-red);background:var(--cs-red-light);padding:1px 4px;border-radius:4px;}
-.sel-check{position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--cs-blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;}
-.cell-svc{display:flex;align-items:center;gap:3px;margin-top:3px;}
-.cell-svc-name{font-size:11px;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px;}
-.cell-empty{font-size:9px;color:#CBD5E1;margin-top:4px;font-style:italic;}
-.cell-backups{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;}
-.backup-dot{width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;}
-.sel-toolbar{display:flex;align-items:center;gap:10px;background:var(--cs-blue);color:#fff;border-radius:12px;padding:10px 16px;margin-bottom:0;flex-wrap:wrap;animation:slideIn 0.2s ease;}
+.sv-badge{font-size:8px;font-weight:700;color:var(--cs-red);background:var(--cs-red-light);padding:1px 4px;border-radius:4px;margin-left:auto;}
+.sel-check{width:14px;height:14px;background:var(--cs-blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;margin-left:auto;flex-shrink:0;}
+.cell-svc{display:flex;align-items:center;gap:3px;margin-bottom:2px;}
+.cell-svc-name{font-size:11px;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cell-empty{font-size:9px;color:#CBD5E1;font-style:italic;}
+.cell-backup-name{font-size:9px;font-weight:600;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cell-note{font-size:9px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;}
+.sel-toolbar{display:flex;align-items:center;gap:10px;background:var(--cs-blue);color:#fff;border-radius:12px;padding:10px 16px;flex-wrap:wrap;animation:slideIn 0.2s ease;}
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
 .sel-info{font-size:13px;font-weight:600;flex:1;}
 .sel-hint{font-size:11px;opacity:0.75;}
 .sel-act-btn{padding:6px 14px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.15);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
 .sel-act-btn:disabled{opacity:0.4;cursor:default;}
 .sel-cancel-btn{padding:6px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);font-size:12px;cursor:pointer;font-family:inherit;}
+.abs-wrap{border-radius:12px;border:1px solid var(--border);background:var(--bg-white);overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 200px);}
+.abs-scroll{overflow-y:auto;overflow-x:auto;flex:1;}
+.abs-table{border-collapse:collapse;min-width:100%;}
+.abs-table th,.abs-table td{border:1px solid var(--border);}
+.abs-table thead{position:sticky;top:0;z-index:4;}
+.abs-th-day{min-width:58px;width:58px;padding:5px 4px;text-align:center;background:#F8FAFC;position:sticky;left:0;z-index:5;border-right:2px solid var(--cs-blue-mid);font-size:10px;font-weight:700;color:var(--text-muted);}
+.abs-td-day{padding:4px 4px;background:#F8FAFC;position:sticky;left:0;z-index:2;border-right:2px solid var(--cs-blue-mid);min-width:58px;width:58px;vertical-align:middle;}
+.abs-td-day.today-r{background:var(--cs-blue-light)!important;}
+.abs-td-day.weekend-r{background:#F0F4F9;}
+.abs-td-day.holiday-r{background:var(--cs-red-light);}
+.abs-td-day.past-r{opacity:0.55;}
+.abs-th-member{min-width:76px;max-width:76px;width:76px;padding:5px 3px;text-align:center;background:#F8FAFC;}
+.abs-member-td{min-width:76px;max-width:76px;width:76px;padding:0;cursor:default;vertical-align:top;}
+.abs-member-td.today-r{background:#F0F7FF;}
+.abs-member-td.weekend-r{background:#F5F8FC;}
+.abs-member-td.holiday-r{background:#FFF5F5;}
+.abs-member-td.past-r{opacity:0.55;}
+.abs-half{display:flex;min-height:39px;padding:3px 4px;cursor:pointer;transition:background 0.1s;align-items:center;justify-content:center;overflow:hidden;}
+.abs-half:hover{background:var(--cs-blue-light);}
+.abs-half.am{border-bottom:1px dashed var(--border);}
+.abs-badge{display:inline-flex;align-items:center;gap:2px;padding:1px 4px;border-radius:4px;font-size:9px;font-weight:700;white-space:nowrap;line-height:1.4;overflow:hidden;max-width:70px;}
+.half-label{font-size:8px;color:var(--text-muted);font-weight:600;}
+.abs-sel-row{background:rgba(0,101,189,0.08)!important;outline:2px solid var(--cs-blue);outline-offset:-1px;}
+.abs-day-card{border-radius:12px;background:var(--bg-white);border:1px solid var(--border);overflow:hidden;margin-bottom:8px;}
+.abs-day-header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);}
+.abs-day-header.today-r{background:var(--cs-blue-light);}
+.abs-day-header.weekend-r{background:var(--cs-blue-light);}
+.abs-day-header.holiday-r{background:var(--cs-red-light);}
+.abs-day-header.past-r{opacity:0.6;}
+.abs-member-row{display:flex;align-items:stretch;border-bottom:1px solid #F0F4F9;}
+.abs-member-row:last-child{border-bottom:none;}
+.abs-member-row.past-r{opacity:0.6;}
+.abs-member-info{display:flex;align-items:center;gap:8px;padding:8px 14px;min-width:120px;border-right:1px solid var(--border);}
+.abs-halves{display:flex;flex-direction:column;flex:1;}
+.abs-half-mob{display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;flex:1;transition:background 0.1s;}
+.abs-half-mob:hover{background:var(--cs-blue-light);}
+.abs-half-mob.am-mob{border-bottom:1px dashed var(--border);}
+.abs-half-label{font-size:10px;font-weight:700;color:var(--text-muted);min-width:24px;}
 .overlay{position:fixed;inset:0;background:rgba(10,20,50,0.45);display:flex;align-items:flex-end;justify-content:center;z-index:999;backdrop-filter:blur(3px);}
 @media(min-width:600px){.overlay{align-items:center;}}
-.modal{background:var(--bg-white);border-radius:20px 20px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,0.1);padding:20px 20px 28px;width:100%;max-width:480px;color:var(--text-primary);max-height:92vh;overflow-y:auto;}
+.modal{background:var(--bg-white);border-radius:20px 20px 0 0;padding:20px 20px 28px;width:100%;max-width:500px;color:var(--text-primary);max-height:92vh;overflow-y:auto;}
 @media(min-width:600px){.modal{border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.12);}}
 .modal-drag{width:40px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 18px;}
 @media(min-width:600px){.modal-drag{display:none;}}
 .modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
-.modal-date{font-size:19px;font-weight:700;color:var(--text-primary);margin-bottom:6px;}
+.modal-date{font-size:19px;font-weight:700;margin-bottom:6px;}
 .modal-date-sub{font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.6;}
 .type-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
 .type-badge.holiday{background:var(--cs-red-light);color:var(--cs-red);border:1px solid #F5B8BF;}
@@ -90,8 +129,8 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
 .mode-tab.active.remove{border-color:var(--cs-red);background:var(--cs-red-light);color:var(--cs-red);}
 .field{margin-bottom:15px;}
 .field-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:7px;}
-.field-row{display:flex;gap:6px;align-items:center;}
-.inp{flex:1;padding:10px 12px;font-size:14px;border-radius:9px;border:1.5px solid var(--border);background:#F8FAFC;color:var(--text-primary);outline:none;font-family:inherit;transition:border-color 0.15s;min-width:0;}
+.field-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.inp{flex:1;padding:10px 12px;font-size:14px;border-radius:9px;border:1.5px solid var(--border);background:#F8FAFC;color:var(--text-primary);outline:none;font-family:inherit;min-width:0;}
 .inp:focus{border-color:var(--cs-blue);background:#fff;}
 .inp::placeholder{color:#CBD5E1;}
 .btn-me{padding:0 12px;height:40px;border-radius:9px;border:1.5px solid var(--cs-blue-mid);background:var(--cs-blue-light);color:var(--cs-blue);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;}
@@ -100,35 +139,38 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
 .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
 .tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px 4px 7px;border-radius:20px;background:var(--cs-blue-light);color:var(--cs-blue);border:1px solid var(--cs-blue-mid);font-weight:600;}
 .tag-x{border:none;background:none;cursor:pointer;color:var(--cs-blue-mid);font-size:14px;padding:0;line-height:1;display:flex;}
-.textarea{width:100%;padding:10px 12px;font-size:14px;border-radius:9px;border:1.5px solid var(--border);background:#F8FAFC;color:var(--text-primary);outline:none;resize:vertical;min-height:64px;font-family:inherit;}
+.textarea{width:100%;padding:10px 12px;font-size:14px;border-radius:9px;border:1.5px solid var(--border);background:#F8FAFC;color:var(--text-primary);outline:none;resize:vertical;min-height:56px;font-family:inherit;}
 .textarea:focus{border-color:var(--cs-blue);background:#fff;}
 .textarea::placeholder{color:#CBD5E1;}
 .dropdown-wrap{position:relative;flex:1;}
 .dropdown-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--cs-blue-mid);border-radius:10px;box-shadow:0 8px 24px rgba(0,101,189,0.15);z-index:200;overflow:hidden;}
 .dropdown-item{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13px;font-weight:500;color:var(--text-primary);cursor:pointer;}
 .dropdown-item:hover,.dropdown-item.active{background:var(--cs-blue-light);color:var(--cs-blue);font-weight:700;}
-.dropdown-item.active::after{content:"✓";margin-left:auto;font-size:12px;}
 .overwrite-warn{background:#FFF7ED;border:1px solid #FED7AA;border-radius:9px;padding:10px 12px;font-size:12px;color:#92400E;margin-bottom:14px;}
 .remove-actions{display:flex;gap:6px;margin-bottom:14px;}
 .remove-sel-btn{padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:#F8FAFC;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:12px;}
-.remove-sel-btn:hover{background:var(--cs-red-light);color:var(--cs-red);border-color:#F5B8BF;}
 .remove-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:280px;overflow-y:auto;}
 .remove-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);background:#F8FAFC;}
 .remove-row.has-data{border-color:var(--cs-blue-mid);background:var(--cs-blue-light);}
 .remove-row-date{font-size:13px;font-weight:600;color:var(--text-secondary);min-width:60px;}
 .remove-row-content{flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .remove-row-empty{font-size:12px;color:var(--text-muted);font-style:italic;}
-.remove-row-svc{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text-primary);}
+.remove-row-svc{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;}
 .remove-check{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
 .remove-check.checked{background:var(--cs-red);border-color:var(--cs-red);color:#fff;}
 .modal-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;}
 .btn-danger{padding:10px 16px;font-size:13px;border-radius:9px;border:none;background:var(--cs-red);color:#fff;cursor:pointer;font-weight:700;font-family:inherit;}
 .btn-danger:disabled{opacity:0.4;cursor:default;}
 .btn-cancel{padding:10px 14px;font-size:13px;border-radius:9px;border:1.5px solid var(--border);background:#F8FAFC;color:var(--text-secondary);cursor:pointer;font-weight:500;font-family:inherit;}
-.btn-save{padding:10px 22px;font-size:13px;border-radius:9px;border:none;background:var(--cs-blue);color:#fff;cursor:pointer;font-weight:700;font-family:inherit;box-shadow:0 3px 10px rgba(0,101,189,0.25);}
-.btn-save:hover{background:var(--cs-blue-dark);}
+.btn-save{padding:10px 22px;font-size:13px;border-radius:9px;border:none;background:var(--cs-blue);color:#fff;cursor:pointer;font-weight:700;font-family:inherit;}
+.half-panel{border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.half-panel-title{font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.abs-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.abs-type-btn{padding:8px 6px;border-radius:9px;border:1.5px solid var(--border);background:#F8FAFC;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;text-align:center;transition:all 0.15s;}
+.abs-type-btn.none-btn{grid-column:1/-1;color:var(--text-muted);}
+.abs-type-btn.none-btn.active{border-color:var(--border);background:#F0F4F9;color:var(--text-secondary);}
 .login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1.5rem;background:var(--bg-page);}
-.login-card{background:var(--bg-white);border-radius:16px;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,101,189,0.1);padding:36px 32px;width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;}
+.login-card{background:var(--bg-white);border-radius:16px;border:1px solid var(--border);padding:36px 32px;width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;}
 .login-icon{width:56px;height:56px;border-radius:14px;background:var(--cs-blue);display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
 .login-title{font-size:21px;font-weight:700;color:var(--text-primary);margin-bottom:5px;text-align:center;}
 .login-sub{font-size:13px;color:var(--text-muted);margin-bottom:22px;text-align:center;}
@@ -145,44 +187,41 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
 <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 
-const SUPABASE_URL = "https://dddykrcegivdzqqritec.supabase.co";
-const SUPABASE_KEY = "sb_publishable_etculBl0KKWoDZRNf7LHUw_ITOrlLLn";
-const API = `${SUPABASE_URL}/rest/v1/schedule`;
-const HDR = {"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Prefer":"resolution=merge-duplicates"};
-
-async function dbGet(){
-  const r=await fetch(`${API}?select=key,value`,{headers:HDR});
-  const rows=await r.json();const out={};
-  for(const row of rows){try{out[row.key]=JSON.parse(row.value);}catch{out[row.key]=row.value;}}
-  return out;
-}
+const SUPABASE_URL="https://dddykrcegivdzqqritec.supabase.co";
+const SUPABASE_KEY="sb_publishable_etculBl0KKWoDZRNf7LHUw_ITOrlLLn";
+const API=`${SUPABASE_URL}/rest/v1/schedule`;
+const HDR={"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Prefer":"resolution=merge-duplicates"};
+async function dbGet(){const r=await fetch(`${API}?select=key,value`,{headers:HDR});const rows=await r.json();const out={};for(const row of rows){try{out[row.key]=JSON.parse(row.value);}catch{out[row.key]=row.value;}}return out;}
 async function dbSet(key,value){await fetch(API,{method:"POST",headers:HDR,body:JSON.stringify({key,value:JSON.stringify(value)})});}
 async function dbDel(key){await fetch(`${API}?key=eq.${encodeURIComponent(key)}`,{method:"DELETE",headers:HDR});}
 
-function easterSunday(y){
-  const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25);
-  const g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7;
-  const m=Math.floor((a+11*h+22*l)/451),month=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;
-  return new Date(y,month-1,day);
-}
-function getCzHolidays(y){
-  const easter=easterSunday(y);
-  const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-  const add=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};
-  const p=(m,d,name)=>[`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`,name];
-  return Object.fromEntries([p(1,1,"Nový rok"),p(5,1,"Svátek práce"),p(5,8,"Den vítězství"),p(7,5,"Svátek věrozvěstů"),p(7,6,"Den Jana Husa"),p(10,28,"Den Československa"),p(11,17,"Den svobody"),p(12,24,"Štědrý den"),p(12,25,"1. vánoční svátek"),p(12,26,"2. vánoční svátek"),[fmt(add(easter,-2)),"Velký pátek"],[fmt(add(easter,1)),"Velikonoční pondělí"]]);
-}
+function easterSunday(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25);const g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7;const m=Math.floor((a+11*h+22*l)/451),month=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;return new Date(y,month-1,day);}
+function getCzHolidays(y){const easter=easterSunday(y);const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;const add=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};const p=(m,d,name)=>[`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`,name];return Object.fromEntries([p(1,1,"Nový rok"),p(5,1,"Svátek práce"),p(5,8,"Den vítězství"),p(7,5,"Svátek věrozvěstů"),p(7,6,"Den Jana Husa"),p(10,28,"Den Československa"),p(11,17,"Den svobody"),p(12,24,"Štědrý den"),p(12,25,"1. vánoční svátek"),p(12,26,"2. vánoční svátek"),[fmt(add(easter,-2)),"Velký pátek"],[fmt(add(easter,1)),"Velikonoční pondělí"]]);}
 const HCZ={};
 const getH=y=>{if(!HCZ[y])HCZ[y]=getCzHolidays(y);return HCZ[y];};
 const toKey=(y,m,d)=>`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+const keyFromDate=d=>toKey(d.getFullYear(),d.getMonth(),d.getDate());
 const getDayType=(y,m,d)=>{const k=toKey(y,m,d);if(getH(y)[k])return"holiday";const w=new Date(y,m,d).getDay();return(w===0||w===6)?"weekend":"workday";};
 
 const MONTHS=["Leden","Únor","Březen","Duben","Květen","Červen","Červenec","Srpen","Září","Říjen","Listopad","Prosinec"];
+const MONTHS_SHORT=["Led","Úno","Bře","Dub","Kvě","Čer","Črc","Srp","Zář","Říj","Lis","Pro"];
 const DAYS=["Po","Út","St","Čt","Pá","So","Ne"];
-const TEAM=["Kuba","Michal B.","Standa","Kája","Tomáš"];
 const DOW_LABELS=["Ne","Po","Út","St","Čt","Pá","So"];
-const AVATAR_COLORS=["#0065BD","#0052A3","#1A7FC4","#005A8E","#003F7A","#2E8BC0","#0077CC","#004F9F"];
+const TEAM=["Alča","Beáta","Kája","Maroš","Michal","Pavel","Roman","Standa","Terka","Tomáš","Vojta B.","Vojta K."];
+const AVATAR_COLORS=["#0065BD","#0052A3","#1A7FC4","#005A8E","#003F7A","#2E8BC0","#0077CC","#004F9F","#1565C0","#0D47A1","#1976D2","#42A5F5"];
 const colorFor=n=>AVATAR_COLORS[Math.abs([...n].reduce((a,c)=>a+c.charCodeAt(0),0))%AVATAR_COLORS.length];
+const ABSENCE_TYPES=[
+  {id:"ho",label:"Home Office",short:"HO",icon:"🏠",color:"#0065BD",bg:"#E8F1FA"},
+  {id:"sick",label:"Sick",short:"Sick",icon:"🤒",color:"#D97706",bg:"#FEF3C7"},
+  {id:"vacation",label:"Dovolená",short:"DOV",icon:"🏖",color:"#16A34A",bg:"#F0FDF4"},
+  {id:"absent",label:"Nepřítomen",short:"ABS",icon:"⛔",color:"#E2001A",bg:"#FDEAEA"},
+  {id:"compoff",label:"Volno za službu",short:"VZS",icon:"🎁",color:"#7C3AED",bg:"#F5F3FF"},
+];
+const absType=id=>ABSENCE_TYPES.find(t=>t.id===id);
+const ABS_DAYS=180;
+const ABS_OFFSET=-7;
+
+function getDateRange(offsetStart,count){const today=new Date();const keys=[];for(let i=offsetStart;i<offsetStart+count;i++){const d=new Date(today);d.setDate(d.getDate()+i);keys.push(keyFromDate(d));}return keys;}
 
 const Avatar=({name,size=28})=>(
   <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:size,height:size,borderRadius:"50%",background:colorFor(name),color:"#fff",fontSize:size*0.36,fontWeight:700,flexShrink:0}}>
@@ -192,13 +231,27 @@ const Avatar=({name,size=28})=>(
 
 function App(){
   const today=new Date();
+  const todayKey=keyFromDate(today);
+  const absDateKeys=getDateRange(ABS_OFFSET,ABS_DAYS);
+  const yesterdayDate=new Date(today);yesterdayDate.setDate(yesterdayDate.getDate()-1);
+  const yesterdayKey=keyFromDate(yesterdayDate);
+
   const [curYear,setCurYear]=useState(today.getFullYear());
   const [curMonth,setCurMonth]=useState(today.getMonth());
-  const [data,setData]=useState({});
+  const [svcData,setSvcData]=useState({});
+  const [absData,setAbsData]=useState({});
   const [loading,setLoading]=useState(true);
   const [saving,setSaving]=useState(false);
+  const [appMode,setAppMode]=useState("sluzba");
   const [modal,setModal]=useState(null);
   const [modalMode,setModalMode]=useState("write");
+  const [absModal,setAbsModal]=useState(null);
+  const [amType,setAmType]=useState(null);
+  const [amNote,setAmNote]=useState("");
+  const [pmType,setPmType]=useState(null);
+  const [pmNote,setPmNote]=useState("");
+  const [absSelecting,setAbsSelecting]=useState(false);
+  const [absSelectedKeys,setAbsSelectedKeys]=useState(new Set());
   const [userName,setUserName]=useState("");
   const [loginScreen,setLoginScreen]=useState(true);
   const [loginInput,setLoginInput]=useState("");
@@ -217,32 +270,33 @@ function App(){
   const headerRef=useRef(null);
   const [headerH,setHeaderH]=useState(0);
 
-  useEffect(()=>{
-    const fn=()=>setIsMobile(window.innerWidth<640);
-    window.addEventListener("resize",fn);
-    return()=>window.removeEventListener("resize",fn);
-  },[]);
+  useEffect(()=>{const fn=()=>setIsMobile(window.innerWidth<640);window.addEventListener("resize",fn);return()=>window.removeEventListener("resize",fn);},[]);
+  useEffect(()=>{if(headerRef.current)setHeaderH(headerRef.current.offsetHeight);},[isMobile,loginScreen,appMode]);
+  useEffect(()=>{if(isMobile&&!loginScreen&&appMode==="sluzba"){setTimeout(()=>{const el=document.getElementById("today-row");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});},300);};},[isMobile,loginScreen,appMode]);
+  useEffect(()=>{if(appMode==="nepritomnost"){setTimeout(()=>{const el=document.getElementById("abs-yesterday-row");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},250);};},[appMode]);
 
   useEffect(()=>{
-    if(headerRef.current)setHeaderH(headerRef.current.offsetHeight);
-  },[isMobile,loginScreen]);
-
-  useEffect(()=>{
-    if(isMobile&&!loginScreen){
-      setTimeout(()=>{const el=document.getElementById("today-row");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});},300);
-    }
-  },[isMobile,loginScreen]);
-
-  useEffect(()=>{
-    const n=localStorage.getItem("vrba_name");
-    const p=localStorage.getItem("vrba_pass");
+    const n=localStorage.getItem("vrba_name");const p=localStorage.getItem("vrba_pass");
     if(n)setLoginInput(n);if(p)setPassInput(p);
     loadData();
   },[]);
 
-  async function loadData(){setLoading(true);try{const d=await dbGet();setData(d);}catch(e){}finally{setLoading(false);}}
-  async function persist(key,value){setSaving(true);try{await dbSet(key,value);}catch(e){}setSaving(false);}
-  async function remove(key){setSaving(true);try{await dbDel(key);}catch(e){}setSaving(false);}
+  async function loadData(){
+    setLoading(true);
+    try{
+      const d=await dbGet();
+      const svc={};const abs={};
+      for(const[k,v] of Object.entries(d)){
+        if(k.startsWith("abs2_"))abs[k.slice(5)]=v;
+        else svc[k]=v;
+      }
+      setSvcData(svc);setAbsData(abs);
+    }catch(e){console.error(e);}
+    finally{setLoading(false);}
+  }
+
+  async function persistSvcKey(key,val){setSaving(true);try{if(val===null)await dbDel(key);else await dbSet(key,val);}catch(e){}setSaving(false);}
+  async function persistAbsKey(dateKey,val){setSaving(true);try{if(val===null)await dbDel("abs2_"+dateKey);else await dbSet("abs2_"+dateKey,val);}catch(e){}setSaving(false);}
 
   const prevMonth=()=>{if(curMonth===0){setCurYear(y=>y-1);setCurMonth(11);}else setCurMonth(m=>m-1);};
   const nextMonth=()=>{if(curMonth===11){setCurYear(y=>y+1);setCurMonth(0);}else setCurMonth(m=>m+1);};
@@ -254,95 +308,334 @@ function App(){
     setUserName(n);setLoginScreen(false);
   }
 
-  function handleCellClick(key){
-    if(selecting){setSelectedKeys(prev=>{const nx=new Set(prev);nx.has(key)?nx.delete(key):nx.add(key);return nx;});}
-    else{openDays([key]);}
-  }
-
+  function handleCellClick(key){if(selecting){setSelectedKeys(prev=>{const nx=new Set(prev);nx.has(key)?nx.delete(key):nx.add(key);return nx;});}else{openDays([key]);}}
   function openDays(keys){
     const isM=keys.length>1;
-    if(!isM){const rec=data[keys[0]]||{};setSvcInput(rec.service||"");setNoteInput(rec.note||"");setLocalBackup(rec.backup||[]);}
+    if(!isM){const rec=svcData[keys[0]]||{};setSvcInput(rec.service||"");setNoteInput(rec.note||"");setLocalBackup(rec.backup||[]);}
     else{setSvcInput("");setNoteInput("");setLocalBackup([]);}
-    setBackupInput("");
-    setRemoveChecked(new Set(keys.filter(k=>data[k]?.service||data[k]?.backup?.length>0)));
-    setModalMode("write");setModal({keys});
+    setBackupInput("");setRemoveChecked(new Set(keys.filter(k=>svcData[k]?.service||svcData[k]?.backup?.length>0)));setModalMode("write");setModal({keys});
   }
-
   async function handleSave(){
     let backup=[...localBackup];
     if(backupInput.trim()){const ex=backupInput.split(",").map(s=>s.trim()).filter(Boolean);backup=[...new Set([...backup,...ex])];}
-    const nd={...data};
+    const nd={...svcData};
     for(const key of modal.keys){
       const rec={service:svcInput.trim(),backup,note:noteInput.trim()};
-      if(!rec.service&&!backup.length&&!rec.note){delete nd[key];await remove(key);}
-      else{nd[key]=rec;await persist(key,rec);}
+      if(!rec.service&&!backup.length&&!rec.note){delete nd[key];await persistSvcKey(key,null);}
+      else{nd[key]=rec;await persistSvcKey(key,rec);}
     }
-    setData(nd);closeModal();
+    setSvcData(nd);setSaving(false);closeModal();
   }
-
   async function handleRemoveSelected(){
-    const nd={...data};
-    for(const key of removeChecked){delete nd[key];await remove(key);}
-    setData(nd);closeModal();
+    const nd={...svcData};
+    for(const key of removeChecked){delete nd[key];await persistSvcKey(key,null);}
+    setSvcData(nd);closeModal();
   }
-
   function closeModal(){setModal(null);setSelectedKeys(new Set());setSelecting(false);setShowSvcDrop(false);setShowBackupDrop(false);}
   function cancelSelection(){setSelectedKeys(new Set());setSelecting(false);}
 
+  function handleAbsRowClick(dateKey){if(!absSelecting)return;setAbsSelectedKeys(prev=>{const nx=new Set(prev);nx.has(dateKey)?nx.delete(dateKey):nx.add(dateKey);return nx;});}
+  function openAbsModal(dateKey,member,e){
+    if(e)e.stopPropagation();if(absSelecting)return;
+    const rec=absData[dateKey]?.[member]||{};
+    setAmType(rec.am?.type||null);setAmNote(rec.am?.note||"");
+    setPmType(rec.pm?.type||null);setPmNote(rec.pm?.note||"");
+    setAbsModal({dateKey,member,multi:false});
+  }
+  function openAbsMultiModal(){
+    if(absSelectedKeys.size===0)return;
+    setAmType(null);setAmNote("");setPmType(null);setPmNote("");
+    setAbsModal({dateKey:null,member:null,multi:true,keys:[...absSelectedKeys]});
+  }
+  async function saveAbsence(){
+    const nd={...absData};
+    const keys=absModal.multi?absModal.keys:[absModal.dateKey];
+    for(const dateKey of keys){
+      if(!nd[dateKey])nd[dateKey]={};
+      const members=absModal.multi?TEAM:[absModal.member];
+      for(const member of members){
+        const entry={};
+        if(amType)entry.am={type:amType,note:amNote.trim()};
+        if(pmType)entry.pm={type:pmType,note:pmNote.trim()};
+        const day={...nd[dateKey]};
+        if(Object.keys(entry).length===0)delete day[member];else day[member]=entry;
+        if(Object.keys(day).length===0)delete nd[dateKey];else nd[dateKey]=day;
+      }
+      await persistAbsKey(dateKey,nd[dateKey]||null);
+    }
+    setAbsData(nd);setAbsModal(null);setAbsSelectedKeys(new Set());setAbsSelecting(false);
+  }
+
   const daysInMonth=new Date(curYear,curMonth+1,0).getDate();
-  let firstDow=new Date(curYear,curMonth,1).getDay();
-  firstDow=firstDow===0?6:firstDow-1;
+  let firstDow=new Date(curYear,curMonth,1).getDay();firstDow=firstDow===0?6:firstDow-1;
   const cells=[...Array(firstDow).fill(null),...Array.from({length:daysInMonth},(_,i)=>i+1)];
   while(cells.length%7!==0)cells.push(null);
-  const todayKey=toKey(today.getFullYear(),today.getMonth(),today.getDate());
   const isMulti=modal?.keys?.length>1;
-  const overwrittenDays=modal?.keys?.filter(k=>data[k]?.service||data[k]?.backup?.length>0)??[];
+  const overwrittenDays=modal?.keys?.filter(k=>svcData[k]?.service||svcData[k]?.backup?.length>0)??[];
   const teamWithMe=[...TEAM,...(userName&&!TEAM.includes(userName)?[userName]:[])];
 
-  if(loginScreen) return (
-    <div className="login-wrap">
-      <div className="login-card">
-        <div className="login-icon"><svg width="26" height="26" viewBox="0 0 28 28" fill="none"><polyline points="2,22 8,14 13,18 20,8 26,4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="26" cy="4" r="2.5" fill="#fff"/></svg></div>
-        <div className="login-title">Týmová vrba SR&BI</div>
-        <div className="login-sub">Přihlaste se pro přístup ke kalendáři</div>
-        <div className="divider"></div>
-        <input className="login-inp" placeholder="Vaše jméno..." value={loginInput} onChange={e=>setLoginInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()} autoFocus/>
-        <input className="login-inp" placeholder="Heslo..." type="password" value={passInput} onChange={e=>{setPassInput(e.target.value);setPassError(false);}} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
-        <div className="login-err">{passError?"Nesprávné heslo":""}</div>
-        <button className="login-btn" onClick={doLogin}>Vstoupit →</button>
+  const renderBadge=(type)=>{if(!type)return null;const at=absType(type);if(!at)return null;return <span className="abs-badge" style={{background:at.bg,color:at.color}}>{at.icon} {at.short}</span>;};
+
+  const renderDesktopCell=(d,i)=>{
+    if(!d)return <div key={i} style={{minHeight:80}}></div>;
+    const key=toKey(curYear,curMonth,d);const type=getDayType(curYear,curMonth,d);const rec=svcData[key];
+    const isToday=key===todayKey;const isSel=selectedKeys.has(key);
+    const isPast=new Date(curYear,curMonth,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
+    const uncovered=!isSel&&type!=="holiday"&&!rec?.service;const hasService=!!rec?.service;
+    const numCls=`cell-num${isToday?" tn":type==="holiday"?" hn":type==="weekend"?" wn":""}`;
+    return(
+      <div key={key} className={`cell ${type}${isToday?" today":""}${isSel?" selected":""}${uncovered?" uncovered":""}${isPast?" past":""}`} onClick={()=>handleCellClick(key)}>
+        <div className="cell-top">
+          <span className={numCls}>{d}</span>
+          {type!=="holiday"&&!isSel&&(hasService?<span style={{width:8,height:8,borderRadius:"50%",background:"#16A34A",display:"inline-block",flexShrink:0}}></span>:<span style={{fontSize:10,lineHeight:1}}>⚠️</span>)}
+          {type==="holiday"&&!isSel&&<span className="sv-badge">SV</span>}
+          {isSel&&<span className="sel-check">✓</span>}
+        </div>
+        {hasService?(<div className="cell-svc"><Avatar name={rec.service} size={14}/><span className="cell-svc-name">{rec.service}</span></div>):(<div className="cell-empty">volný</div>)}
+        {rec?.backup?.length>0&&rec.backup.slice(0,2).map(n=>(<div key={n} className="cell-svc" style={{opacity:0.8}}><Avatar name={n} size={11}/><span className="cell-backup-name">{n}</span></div>))}
+        {rec?.backup?.length>2&&<div style={{fontSize:9,color:"#94A3B8"}}>+{rec.backup.length-2}</div>}
+        {rec?.note&&<div className="cell-note">💬 {rec.note}</div>}
       </div>
-    </div>
+    );
+  };
+
+  if(loginScreen) return (
+    <div className="login-wrap"><div className="login-card">
+      <div className="login-icon"><svg width="26" height="26" viewBox="0 0 28 28" fill="none"><polyline points="2,22 8,14 13,18 20,8 26,4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="26" cy="4" r="2.5" fill="#fff"/></svg></div>
+      <div className="login-title">Týmová vrba SR&BI</div>
+      <div className="login-sub">Přihlaste se pro přístup ke kalendáři</div>
+      <div className="divider"></div>
+      <input className="login-inp" placeholder="Vaše jméno..." value={loginInput} onChange={e=>setLoginInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()} autoFocus/>
+      <input className="login-inp" placeholder="Heslo..." type="password" value={passInput} onChange={e=>{setPassInput(e.target.value);setPassError(false);}} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
+      <div className="login-err">{passError?"Nesprávné heslo":""}</div>
+      <button className="login-btn" onClick={doLogin}>Vstoupit →</button>
+    </div></div>
   );
 
-  const renderModal=()=>{
-    if(!modal)return null;
-    const sortedKeys=[...modal.keys].sort();
-    return (
-      <div className="overlay" onClick={e=>{if(e.target===e.currentTarget)setModal(null);}}>
-        <div className="modal">
-          <div className="modal-drag"></div>
-          <div className="modal-header">
-            <div>
-              {isMulti?(
-                <><div className="modal-date">Hromadná úprava</div><span className="type-badge multi">📅 {modal.keys.length} dní</span><div className="modal-date-sub">{sortedKeys.map(k=>{const[,mm,dd]=k.split("-");return`${parseInt(dd)}.${parseInt(mm)}.`;}).join("  ·  ")}</div></>
-              ):(()=>{
-                const [ky,km,kd]=modal.keys[0].split("-").map(Number);
-                const type=getDayType(ky,km-1,kd);
-                const label=type==="holiday"?getH(ky)[modal.keys[0]]:type==="weekend"?"Víkend":"Všední den";
-                return(<><div className="modal-date">{kd}. {MONTHS[km-1]} {ky}</div><span className={`type-badge ${type}`}>{label}</span></>);
-              })()}
+  return (
+    <div className="root">
+      <div className={`header${isMobile?" header-sticky":""}`} ref={headerRef}>
+        <div className="brand">
+          <div className="brand-icon"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><polyline points="2,22 8,14 13,18 20,8 26,4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="26" cy="4" r="2.5" fill="#fff"/></svg></div>
+          <span className="brand-name">Týmová vrba SR&BI</span>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          {appMode==="sluzba"&&(<div className="nav-row">
+            <button className="nav-btn" onClick={prevMonth}>‹</button>
+            <span className="month-label">{MONTHS[curMonth]} {curYear}</span>
+            <button className="nav-btn" onClick={nextMonth}>›</button>
+            <button className="today-btn" onClick={()=>{setCurYear(today.getFullYear());setCurMonth(today.getMonth());}}>Dnes</button>
+          </div>)}
+          <div className="user-pill"><Avatar name={userName} size={22}/><span className="user-name">{userName}</span><button className="logout-btn" onClick={()=>{setLoginScreen(true);setLoginInput("");setPassInput("");setPassError(false);}}>✕</button></div>
+        </div>
+      </div>
+
+      <div className="mode-switch">
+        <button className={`mode-switch-btn${appMode==="sluzba"?" active":""}`} onClick={()=>setAppMode("sluzba")}>📋 Služba</button>
+        <button className={`mode-switch-btn${appMode==="nepritomnost"?" active":""}`} onClick={()=>setAppMode("nepritomnost")}>🏠 Nepřítomnost</button>
+      </div>
+
+      {appMode==="sluzba"&&(<>
+        <div className="legend">
+          <span><span className="legend-dot" style={{background:"#FDEAEA",border:"1px solid #F5B8BF"}}></span>Státní svátek</span>
+          <span><span className="legend-dot" style={{background:"#E8F1FA",border:"1px solid #B3D0ED"}}></span>Víkend</span>
+          <span><span className="legend-dot" style={{background:"#fff",border:"1.5px solid #F97316"}}></span>Nepokryto</span>
+          {(saving||loading)&&<span className="status">{saving?"Ukládám…":"Načítám…"}</span>}
+        </div>
+        <div style={isMobile?{position:"sticky",top:headerH,zIndex:99,background:"var(--bg-page)",paddingBottom:8,marginBottom:4}:{marginBottom:10}}>
+          {selecting?(<div className="sel-toolbar">
+            <div><div className="sel-info">Vybráno {selectedKeys.size} {selectedKeys.size===1?"den":selectedKeys.size>=2&&selectedKeys.size<=4?"dny":"dní"}</div><div className="sel-hint">Klikejte na dny pro výběr</div></div>
+            <button className="sel-act-btn" disabled={selectedKeys.size===0} onClick={()=>openDays([...selectedKeys])}>Upravit vybrané →</button>
+            <button className="sel-cancel-btn" onClick={cancelSelection}>Zrušit</button>
+          </div>):(
+            <div style={{display:"flex",justifyContent:"flex-end"}}><button className="today-btn" style={{background:"var(--cs-blue)",color:"#fff",border:"none",padding:"0 14px",height:34,fontSize:13,fontWeight:600}} onClick={()=>setSelecting(true)}>☑ Vybrat více dní</button></div>
+          )}
+        </div>
+        {!isMobile&&(<><div className="day-headers">{DAYS.map((dn,i)=><div key={dn} className={`day-hdr${i>=5?" we":""}`}>{dn}</div>)}</div><div className="cal-grid">{cells.map((d,i)=>renderDesktopCell(d,i))}</div></>)}
+        {isMobile&&(<div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>{
+            const key=toKey(curYear,curMonth,d);const type=getDayType(curYear,curMonth,d);const rec=svcData[key];
+            const isToday=key===todayKey;const isSel=selectedKeys.has(key);
+            const isPast=new Date(curYear,curMonth,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
+            const uncovered=!isSel&&type!=="holiday"&&!rec?.service;const dow=new Date(curYear,curMonth,d).getDay();
+            const holidayName=getH(curYear)[key];const hasService=!!rec?.service;
+            let borderColor="var(--border)";
+            if(isSel)borderColor="var(--cs-blue)";else if(type==="holiday")borderColor="#F5B8BF";else if(uncovered)borderColor="#F97316";else if(hasService)borderColor="var(--cs-blue-mid)";
+            let bg="var(--bg-white)";if(isSel)bg="var(--cs-blue-light)";else if(type==="holiday")bg="var(--cs-red-light)";else if(type==="weekend")bg="var(--cs-blue-light)";
+            const dateColor=isToday?"var(--cs-blue)":type==="holiday"?"var(--cs-red)":type==="weekend"?"var(--cs-blue)":"var(--text-primary)";
+            return(<div key={key} id={isToday?"today-row":undefined} onClick={()=>handleCellClick(key)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,background:bg,border:`1.5px solid ${borderColor}`,opacity:isPast?0.45:1,filter:isPast?"grayscale(30%)":"none",cursor:"pointer",boxShadow:isToday?"0 0 0 3px rgba(0,101,189,0.15)":"none"}}>
+              <div style={{minWidth:44,display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
+                <span style={{fontSize:24,fontWeight:800,lineHeight:1,color:dateColor}}>{d}</span>
+                <span style={{fontSize:11,fontWeight:600,color:"var(--text-muted)",textTransform:"uppercase",letterSpacing:"0.5px",marginTop:2}}>{DOW_LABELS[dow]}</span>
+              </div>
+              <div style={{width:2,height:40,borderRadius:2,background:borderColor,flexShrink:0,opacity:0.5}}/>
+              <div style={{flex:1,minWidth:0}}>
+                {holidayName&&<div style={{fontSize:11,fontWeight:600,color:"var(--cs-red)",marginBottom:3}}>{holidayName}</div>}
+                {hasService?(<div style={{display:"flex",alignItems:"center",gap:7,marginBottom:rec?.backup?.length>0||rec?.note?5:0}}><Avatar name={rec.service} size={24}/><span style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>{rec.service}</span></div>):(<span style={{fontSize:14,color:"var(--text-muted)",fontStyle:"italic"}}>volný</span>)}
+                {rec?.backup?.length>0&&(<div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap",marginTop:2}}><span style={{fontSize:11,color:"var(--text-muted)"}}>záloha:</span>{rec.backup.map(n=>(<span key={n} style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:12,fontWeight:600,color:"var(--cs-blue)"}}><Avatar name={n} size={14}/>{n}</span>))}</div>)}
+                {rec?.note&&<div style={{fontSize:12,color:"var(--text-muted)",marginTop:3,fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>💬 {rec.note}</div>}
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flexShrink:0}}>
+                {isSel&&<span style={{width:22,height:22,borderRadius:"50%",background:"var(--cs-blue)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"#fff",fontWeight:700}}>✓</span>}
+                {!isSel&&hasService&&<span style={{width:10,height:10,borderRadius:"50%",background:"var(--cs-green)",display:"block"}}/>}
+                {!isSel&&uncovered&&type!=="holiday"&&<span style={{fontSize:16}}>⚠️</span>}
+              </div>
+            </div>);
+          })}
+        </div>)}
+      </>)}
+
+      {appMode==="nepritomnost"&&(<>
+        <div className="legend">
+          {ABSENCE_TYPES.map(t=>(<span key={t.id}><span className="legend-dot" style={{background:t.bg,border:`1px solid ${t.color}`}}></span>{t.icon} {t.label}</span>))}
+          {(saving||loading)&&<span className="status">{saving?"Ukládám…":"Načítám…"}</span>}
+        </div>
+        <div style={{marginBottom:10}}>
+          {absSelecting?(<div className="sel-toolbar">
+            <div><div className="sel-info">Vybráno {absSelectedKeys.size} {absSelectedKeys.size===1?"den":absSelectedKeys.size>=2&&absSelectedKeys.size<=4?"dny":"dní"}</div><div className="sel-hint">Klikejte na řádky dnů pro výběr</div></div>
+            <button className="sel-act-btn" disabled={absSelectedKeys.size===0} onClick={openAbsMultiModal}>Upravit vybrané →</button>
+            <button className="sel-cancel-btn" onClick={()=>{setAbsSelecting(false);setAbsSelectedKeys(new Set());}}>Zrušit</button>
+          </div>):(
+            <div style={{display:"flex",justifyContent:"flex-end"}}><button className="today-btn" style={{background:"var(--cs-blue)",color:"#fff",border:"none",padding:"0 14px",height:34,fontSize:13,fontWeight:600}} onClick={()=>setAbsSelecting(true)}>☑ Vybrat více dní</button></div>
+          )}
+        </div>
+
+        {!isMobile&&(
+          <div className="abs-wrap">
+            <div className="abs-scroll">
+              <table className="abs-table">
+                <thead>
+                  <tr>
+                    <th className="abs-th-day">
+                      <div style={{fontSize:9,color:"var(--text-muted)",fontWeight:600}}>Den</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:1,marginTop:3}}>
+                        <span style={{fontSize:8,fontWeight:700,color:"var(--cs-blue)"}}>DOP.</span>
+                        <span style={{fontSize:8,fontWeight:700,color:"var(--text-secondary)"}}>ODP.</span>
+                      </div>
+                    </th>
+                    {TEAM.map(m=>(<th key={m} className="abs-th-member"><div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}><Avatar name={m} size={20}/><span style={{fontSize:9,fontWeight:700,color:"var(--text-secondary)"}}>{m}</span></div></th>))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {absDateKeys.map(dateKey=>{
+                    const[y,mm,dd]=dateKey.split("-").map(Number);
+                    const type=getDayType(y,mm-1,dd);
+                    const isToday=dateKey===todayKey;const isYesterday=dateKey===yesterdayKey;
+                    const isWeekend=type==="weekend";const isHoliday=type==="holiday";
+                    const isPast=dateKey<todayKey;const dow=new Date(y,mm-1,dd).getDay();
+                    const holidayName=getH(y)[dateKey];const isSel=absSelectedKeys.has(dateKey);
+                    let dayCls="abs-td-day";
+                    if(isToday)dayCls+=" today-r";else if(isHoliday)dayCls+=" holiday-r";else if(isWeekend)dayCls+=" weekend-r";
+                    if(isPast)dayCls+=" past-r";
+                    const dateColor=isToday?"var(--cs-blue)":isHoliday?"var(--cs-red)":isWeekend?"var(--cs-blue)":"var(--text-primary)";
+                    return(
+                      <tr key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":undefined}
+                        className={isSel?"abs-sel-row":""}
+                        style={isToday?{outline:"3px solid var(--cs-blue)",outlineOffset:"-1px",position:"relative",zIndex:1}:{}}
+                        onClick={()=>handleAbsRowClick(dateKey)}>
+                        <td className={dayCls} style={{cursor:absSelecting?"pointer":"default"}}>
+                          <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+                            <span style={{fontSize:15,fontWeight:800,color:dateColor,lineHeight:1}}>{dd}</span>
+                            <span style={{fontSize:9,fontWeight:600,color:"var(--text-muted)",textTransform:"uppercase"}}>{DOW_LABELS[dow]}</span>
+                            <span style={{fontSize:8,color:"var(--text-muted)"}}>{MONTHS_SHORT[mm-1]}</span>
+                            {isToday&&<span style={{fontSize:8,background:"var(--cs-blue)",color:"#fff",borderRadius:4,padding:"2px 5px",marginTop:2,fontWeight:800,letterSpacing:0.5}}>● DNES</span>}
+                            {isSel&&!isToday&&<span style={{fontSize:8,background:"var(--cs-blue)",color:"#fff",borderRadius:4,padding:"1px 4px",marginTop:2,fontWeight:700}}>✓</span>}
+                            {holidayName&&<span style={{fontSize:7,color:"var(--cs-red)",fontWeight:600,textAlign:"center",lineHeight:1.1,marginTop:1,maxWidth:52,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{holidayName}</span>}
+                          </div>
+                        </td>
+                        {TEAM.map(member=>{
+                          const rec=absData[dateKey]?.[member]||{};
+                          let cellCls="abs-member-td";
+                          if(isToday)cellCls+=" today-r";else if(isHoliday)cellCls+=" holiday-r";else if(isWeekend)cellCls+=" weekend-r";
+                          if(isPast)cellCls+=" past-r";
+                          return(
+                            <td key={member} className={cellCls}>
+                              <div className="abs-half am" onClick={e=>openAbsModal(dateKey,member,e)} style={rec.am?.type?{background:absType(rec.am.type)?.bg,cursor:"pointer"}:{cursor:absSelecting?"default":"pointer"}}>
+                                {rec.am?.type?renderBadge(rec.am.type):<span className="half-label">dop.</span>}
+                              </div>
+                              <div className="abs-half" onClick={e=>openAbsModal(dateKey,member,e)} style={rec.pm?.type?{background:absType(rec.pm.type)?.bg,cursor:"pointer"}:{cursor:absSelecting?"default":"pointer"}}>
+                                {rec.pm?.type?renderBadge(rec.pm.type):<span className="half-label">odp.</span>}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-            <button className="close-btn" onClick={()=>setModal(null)}>✕</button>
           </div>
-          <div className="mode-tabs">
-            <button className={`mode-tab${modalMode==="write"?" active write":""}`} onClick={()=>setModalMode("write")}>✏️ {isMulti?"Zapsat do dní":"Zapsat"}</button>
-            <button className={`mode-tab${modalMode==="remove"?" active remove":""}`} onClick={()=>setModalMode("remove")}>🗑 {isMulti?"Smazat záznamy":"Smazat záznam"}</button>
-          </div>
-          {modalMode==="write"&&(
-            <>
+        )}
+
+        {isMobile&&(<div>
+          {absDateKeys.map(dateKey=>{
+            const[y,mm,dd]=dateKey.split("-").map(Number);
+            const type=getDayType(y,mm-1,dd);
+            const isToday=dateKey===todayKey;const isYesterday=dateKey===yesterdayKey;
+            const isWeekend=type==="weekend";const isHoliday=type==="holiday";
+            const isPast=dateKey<todayKey;const dow=new Date(y,mm-1,dd).getDay();
+            const holidayName=getH(y)[dateKey];const isSel=absSelectedKeys.has(dateKey);
+            let hdrCls="abs-day-header";
+            if(isToday)hdrCls+=" today-r";else if(isHoliday)hdrCls+=" holiday-r";else if(isWeekend)hdrCls+=" weekend-r";
+            if(isPast)hdrCls+=" past-r";
+            const dateColor=isToday?"var(--cs-blue)":isHoliday?"var(--cs-red)":isWeekend?"var(--cs-blue)":"var(--text-primary)";
+            return(<div key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":undefined}
+              className="abs-day-card"
+              style={isToday?{border:"2px solid var(--cs-blue)",boxShadow:"0 0 0 3px rgba(0,101,189,0.15)"}:isSel?{border:"2px solid var(--cs-blue)"}:{}}>
+              <div className={hdrCls} onClick={()=>handleAbsRowClick(dateKey)} style={{cursor:absSelecting?"pointer":"default"}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",minWidth:42}}>
+                  <span style={{fontSize:22,fontWeight:800,lineHeight:1,color:dateColor}}>{dd}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:"var(--text-muted)",textTransform:"uppercase"}}>{DOW_LABELS[dow]}</span>
+                  <span style={{fontSize:9,color:"var(--text-muted)"}}>{MONTHS_SHORT[mm-1]}</span>
+                </div>
+                <div style={{flex:1}}>
+                  {isToday&&<span style={{fontSize:11,fontWeight:700,color:"var(--cs-blue)",display:"block"}}>● Dnes</span>}
+                  {holidayName&&<div style={{fontSize:11,fontWeight:600,color:"var(--cs-red)"}}>{holidayName}</div>}
+                </div>
+                {isSel&&<span style={{fontSize:18}}>✓</span>}
+              </div>
+              {TEAM.map(member=>{
+                const rec=absData[dateKey]?.[member]||{};
+                return(<div key={member} className={`abs-member-row${isPast?" past-r":""}`}>
+                  <div className="abs-member-info"><Avatar name={member} size={24}/><span style={{fontSize:12,fontWeight:600,color:"var(--text-primary)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:70}}>{member}</span></div>
+                  <div className="abs-halves">
+                    <div className="abs-half-mob am-mob" onClick={e=>openAbsModal(dateKey,member,e)} style={rec.am?.type?{background:absType(rec.am.type)?.bg}:{}}>
+                      <span className="abs-half-label">Dop.</span>
+                      {rec.am?.type?(<div style={{display:"flex",alignItems:"center",gap:4,flex:1}}>{renderBadge(rec.am.type)}</div>):<span style={{fontSize:10,color:"var(--text-muted)"}}>přítomen</span>}
+                    </div>
+                    <div className="abs-half-mob" onClick={e=>openAbsModal(dateKey,member,e)} style={rec.pm?.type?{background:absType(rec.pm.type)?.bg}:{}}>
+                      <span className="abs-half-label">Odp.</span>
+                      {rec.pm?.type?(<div style={{display:"flex",alignItems:"center",gap:4,flex:1}}>{renderBadge(rec.pm.type)}</div>):<span style={{fontSize:10,color:"var(--text-muted)"}}>přítomen</span>}
+                    </div>
+                  </div>
+                </div>);
+              })}
+            </div>);
+          })}
+        </div>)}
+      </>)}
+
+      {/* SLUZBA MODAL */}
+      {modal&&(()=>{
+        const sortedKeys=[...modal.keys].sort();
+        return(<div className="overlay" onClick={e=>{if(e.target===e.currentTarget)setModal(null);}}>
+          <div className="modal">
+            <div className="modal-drag"></div>
+            <div className="modal-header">
+              <div>
+                {isMulti?(<><div className="modal-date">Hromadná úprava</div><span className="type-badge multi">📅 {modal.keys.length} dní</span><div className="modal-date-sub">{sortedKeys.map(k=>{const[,mm,dd]=k.split("-");return`${parseInt(dd)}.${parseInt(mm)}.`;}).join("  ·  ")}</div></>)
+                :(()=>{const[ky,km,kd]=modal.keys[0].split("-").map(Number);const type=getDayType(ky,km-1,kd);const label=type==="holiday"?getH(ky)[modal.keys[0]]:type==="weekend"?"Víkend":"Všední den";return(<><div className="modal-date">{kd}. {MONTHS[km-1]} {ky}</div><span className={`type-badge ${type}`}>{label}</span></>);})()}
+              </div>
+              <button className="close-btn" onClick={()=>setModal(null)}>✕</button>
+            </div>
+            <div className="mode-tabs">
+              <button className={`mode-tab${modalMode==="write"?" active write":""}`} onClick={()=>setModalMode("write")}>✏️ Zapsat</button>
+              <button className={`mode-tab${modalMode==="remove"?" active remove":""}`} onClick={()=>setModalMode("remove")}>🗑 Smazat</button>
+            </div>
+            {modalMode==="write"&&(<>
               {isMulti&&overwrittenDays.length>0&&<div className="overwrite-warn">⚠️ {overwrittenDays.length} z vybraných dní již má záznam – bude přepsán.</div>}
-              <div className="field">
-                <label className="field-label">Služba</label>
+              <div className="field"><label className="field-label">Služba</label>
                 <div className="field-row">
                   {svcInput&&<Avatar name={svcInput} size={32}/>}
                   <div className="dropdown-wrap">
@@ -350,13 +643,12 @@ function App(){
                     {showSvcDrop&&(<div className="dropdown-list">{teamWithMe.filter(n=>n.toLowerCase().includes(svcInput.toLowerCase())).map(n=>(<div key={n} className={`dropdown-item${svcInput===n?" active":""}`} onMouseDown={()=>{setSvcInput(n);setShowSvcDrop(false);}}><Avatar name={n} size={20}/>{n}</div>))}</div>)}
                   </div>
                   <button className="btn-me" onClick={()=>setSvcInput(userName)}>+ Já</button>
-                  {isMulti&&<button className="btn-trash" onClick={async()=>{const nd={...data};for(const key of modal.keys){if(nd[key]?.service===userName){const r={...nd[key]};delete r.service;nd[key]=r;await persist(key,r);}}setData(nd);}}>🗑</button>}
+                  {isMulti&&<button className="btn-trash" onClick={async()=>{const nd={...svcData};for(const key of modal.keys){if(nd[key]?.service===userName){const r={...nd[key]};delete r.service;nd[key]=r;await persistSvcKey(key,r);}}setSvcData(nd);}}>🗑</button>}
                   {!isMulti&&svcInput&&<button className="btn-trash" onClick={()=>setSvcInput("")}>🗑</button>}
                 </div>
                 {isMulti&&<div style={{fontSize:11,color:"var(--text-muted)",marginTop:5}}>🗑 odebere jen vás okamžitě · „Uložit" zapíše do všech dní</div>}
               </div>
-              <div className="field">
-                <label className="field-label">K dispozici (záloha)</label>
+              <div className="field"><label className="field-label">K dispozici (záloha)</label>
                 {localBackup.length>0&&(<div className="tags">{localBackup.map(n=>(<span key={n} className="tag"><Avatar name={n} size={16}/>{n}<button className="tag-x" onClick={()=>setLocalBackup(lb=>lb.filter(x=>x!==n))}>✕</button></span>))}</div>)}
                 <div className="field-row">
                   <div className="dropdown-wrap">
@@ -364,41 +656,31 @@ function App(){
                     {showBackupDrop&&(<div className="dropdown-list">{teamWithMe.filter(n=>!localBackup.includes(n)&&n.toLowerCase().includes(backupInput.toLowerCase())).map(n=>(<div key={n} className="dropdown-item" onMouseDown={()=>{setLocalBackup(lb=>[...new Set([...lb,n])]);setBackupInput("");setShowBackupDrop(false);}}><Avatar name={n} size={20}/>{n}</div>))}</div>)}
                   </div>
                   <button className="btn-me" onClick={()=>{if(!localBackup.includes(userName))setLocalBackup(lb=>[...lb,userName]);}}>+ Já</button>
-                  {isMulti&&<button className="btn-trash" onClick={async()=>{const nd={...data};for(const key of modal.keys){if(nd[key]?.backup){nd[key]={...nd[key],backup:nd[key].backup.filter(n=>n!==userName)};await persist(key,nd[key]);}}setData(nd);}}>🗑</button>}
+                  {isMulti&&<button className="btn-trash" onClick={async()=>{const nd={...svcData};for(const key of modal.keys){if(nd[key]?.backup){nd[key]={...nd[key],backup:nd[key].backup.filter(n=>n!==userName)};await persistSvcKey(key,nd[key]);}}setSvcData(nd);}}>🗑</button>}
                   {!isMulti&&localBackup.length>0&&<button className="btn-trash" onClick={()=>setLocalBackup([])}>🗑</button>}
                 </div>
                 {isMulti&&<div style={{fontSize:11,color:"var(--text-muted)",marginTop:5}}>🗑 odebere jen vás okamžitě · „Uložit" přidá do všech dní</div>}
               </div>
-              <div className="field">
-                <label className="field-label">Poznámka</label>
+              <div className="field"><label className="field-label">Poznámka</label>
                 <textarea className="textarea" placeholder="Volitelná poznámka..." value={noteInput} onChange={e=>setNoteInput(e.target.value)} rows={2}/>
               </div>
-              <div className="modal-footer">
-                <div/>
-                <div style={{display:"flex",gap:8}}>
-                  <button className="btn-cancel" onClick={()=>setModal(null)}>Zrušit</button>
-                  <button className="btn-save" onClick={handleSave}>{isMulti?`Uložit ${modal.keys.length} dní`:"Uložit"}</button>
-                </div>
-              </div>
-            </>
-          )}
-          {modalMode==="remove"&&(
-            <>
+              <div className="modal-footer"><div/><div style={{display:"flex",gap:8}}>
+                <button className="btn-cancel" onClick={()=>setModal(null)}>Zrušit</button>
+                <button className="btn-save" onClick={handleSave}>{isMulti?`Uložit ${modal.keys.length} dní`:"Uložit"}</button>
+              </div></div>
+            </>)}
+            {modalMode==="remove"&&(<>
               <div className="remove-actions">
-                <button className="remove-sel-btn" onClick={()=>setRemoveChecked(new Set(sortedKeys.filter(k=>data[k]?.service||data[k]?.backup?.length>0)))}>Vybrat vše s daty</button>
+                <button className="remove-sel-btn" onClick={()=>setRemoveChecked(new Set(sortedKeys.filter(k=>svcData[k]?.service||svcData[k]?.backup?.length>0)))}>Vybrat vše s daty</button>
                 <button className="remove-sel-btn" onClick={()=>setRemoveChecked(new Set())}>Odznačit vše</button>
               </div>
               <div className="remove-list">
-                {sortedKeys.map(k=>{
-                  const[,km,kd]=k.split("-");const rec=data[k];
-                  const hasData=!!(rec?.service||rec?.backup?.length>0);const checked=removeChecked.has(k);
-                  return(
-                    <div key={k} className={`remove-row${hasData?" has-data":""}`}>
-                      <div className="remove-row-date">{parseInt(kd)}.{parseInt(km)}.</div>
-                      <div className="remove-row-content">{hasData?(<>{rec.service&&<div className="remove-row-svc"><Avatar name={rec.service} size={16}/>{rec.service}</div>}{rec.backup?.length>0&&<div style={{display:"flex",gap:3}}>{rec.backup.map(n=><span key={n} className="backup-dot" style={{background:colorFor(n)}} title={n}>{n[0].toUpperCase()}</span>)}</div>}</>):(<span className="remove-row-empty">prázdný den</span>)}</div>
-                      <button className={`remove-check${checked?" checked":""}`} onClick={()=>setRemoveChecked(prev=>{const nx=new Set(prev);nx.has(k)?nx.delete(k):nx.add(k);return nx;})} disabled={!hasData}>{checked?"✓":""}</button>
-                    </div>
-                  );
+                {sortedKeys.map(k=>{const[,km,kd]=k.split("-");const rec=svcData[k];const hasData=!!(rec?.service||rec?.backup?.length>0);const checked=removeChecked.has(k);
+                  return(<div key={k} className={`remove-row${hasData?" has-data":""}`}>
+                    <div className="remove-row-date">{parseInt(kd)}.{parseInt(km)}.</div>
+                    <div className="remove-row-content">{hasData?(<>{rec.service&&<div className="remove-row-svc"><Avatar name={rec.service} size={16}/>{rec.service}</div>}{rec.backup?.length>0&&<div style={{display:"flex",gap:3,flexWrap:"wrap"}}>{rec.backup.map(n=><span key={n} style={{fontSize:11,color:"var(--cs-blue)",fontWeight:600}}>{n}</span>)}</div>}</>):(<span className="remove-row-empty">prázdný den</span>)}</div>
+                    <button className={`remove-check${checked?" checked":""}`} onClick={()=>setRemoveChecked(prev=>{const nx=new Set(prev);nx.has(k)?nx.delete(k):nx.add(k);return nx;})} disabled={!hasData}>{checked?"✓":""}</button>
+                  </div>);
                 })}
               </div>
               <div className="modal-footer">
@@ -408,145 +690,57 @@ function App(){
                   <button className="btn-danger" disabled={removeChecked.size===0} onClick={handleRemoveSelected}>🗑 Smazat {removeChecked.size>0?removeChecked.size+" dní":""}</button>
                 </div>
               </div>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="root">
-      {/* HEADER – sticky na mobilu, měřen přes ref */}
-      <div className={`header${isMobile?" header-sticky":""}`} ref={headerRef}>
-        <div className="brand">
-          <div className="brand-icon"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><polyline points="2,22 8,14 13,18 20,8 26,4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="26" cy="4" r="2.5" fill="#fff"/></svg></div>
-          <span className="brand-name">Týmová vrba SR&BI</span>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-          <div className="nav-row">
-            <button className="nav-btn" onClick={prevMonth}>‹</button>
-            <span className="month-label">{MONTHS[curMonth]} {curYear}</span>
-            <button className="nav-btn" onClick={nextMonth}>›</button>
-            <button className="today-btn" onClick={()=>{setCurYear(today.getFullYear());setCurMonth(today.getMonth());}}>Dnes</button>
+            </>)}
           </div>
-          <div className="user-pill">
-            <Avatar name={userName} size={22}/>
-            <span className="user-name">{userName}</span>
-            <button className="logout-btn" onClick={()=>{setLoginScreen(true);setLoginInput("");setPassInput("");setPassError(false);}}>✕</button>
-          </div>
-        </div>
-      </div>
+        </div>);
+      })()}
 
-      {/* LEGENDA */}
-      <div className="legend">
-        <span><span className="legend-dot" style={{background:"#FDEAEA",border:"1px solid #F5B8BF"}}></span>Státní svátek</span>
-        <span><span className="legend-dot" style={{background:"#E8F1FA",border:"1px solid #B3D0ED"}}></span>Víkend</span>
-        <span><span className="legend-dot" style={{background:"#fff",border:"1.5px solid #F97316"}}></span>Nepokryto</span>
-        {(saving||loading)&&<span className="status">{saving?"Ukládám…":"Načítám…"}</span>}
-      </div>
-
-      {/* TOOLBAR – sticky na mobilu těsně pod headerem */}
-      <div style={isMobile?{position:"sticky",top:headerH,zIndex:99,background:"var(--bg-page)",paddingBottom:8,marginBottom:4}:{marginBottom:10}}>
-        {selecting?(
-          <div className="sel-toolbar">
-            <div>
-              <div className="sel-info">Vybráno {selectedKeys.size} {selectedKeys.size===1?"den":selectedKeys.size>=2&&selectedKeys.size<=4?"dny":"dní"}</div>
-              <div className="sel-hint">Klikejte na dny pro výběr</div>
-            </div>
-            <button className="sel-act-btn" disabled={selectedKeys.size===0} onClick={()=>openDays([...selectedKeys])}>Upravit vybrané →</button>
-            <button className="sel-cancel-btn" onClick={cancelSelection}>Zrušit</button>
-          </div>
-        ):(
-          <div style={{display:"flex",justifyContent:"flex-end"}}>
-            <button className="today-btn" style={{background:"var(--cs-blue)",color:"#fff",border:"none",padding:"0 14px",height:34,fontSize:13,fontWeight:600}} onClick={()=>setSelecting(true)}>☑ Vybrat více dní</button>
-          </div>
-        )}
-      </div>
-
-      {/* DESKTOP GRID */}
-      {!isMobile&&(
-        <>
-          <div className="day-headers">{DAYS.map((dn,i)=><div key={dn} className={`day-hdr${i>=5?" we":""}`}>{dn}</div>)}</div>
-          <div className="cal-grid">
-            {cells.map((d,i)=>{
-              if(!d)return <div key={i} style={{minHeight:76}}></div>;
-              const key=toKey(curYear,curMonth,d);const type=getDayType(curYear,curMonth,d);const rec=data[key];
-              const isToday=key===todayKey;const isSel=selectedKeys.has(key);
-              const isPast=new Date(curYear,curMonth,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
-              const uncovered=!isSel&&type!=="holiday"&&!rec?.service;
-              return(
-                <div key={key} className={`cell ${type}${isToday?" today":""}${isSel?" selected":""}${uncovered?" uncovered":""}${isPast?" past":""}`} onClick={()=>handleCellClick(key)}>
-                  <span className={`cell-num${isToday?" tn":type==="holiday"?" hn":type==="weekend"?" wn":""}`}>{d}</span>
-                  {type==="holiday"&&!isSel&&<span className="sv-badge">SV</span>}
-                  {isSel&&<span className="sel-check">✓</span>}
-                  {rec?.service?(<div className="cell-svc"><Avatar name={rec.service} size={15}/><span className="cell-svc-name">{rec.service}</span></div>):(<div className="cell-empty">volný</div>)}
-                  {rec?.backup?.length>0&&(<div className="cell-backups">{rec.backup.slice(0,3).map(n=>(<span key={n} className="backup-dot" style={{background:colorFor(n)}} title={n}>{n[0].toUpperCase()}</span>))}{rec.backup.length>3&&<span style={{fontSize:9,color:"#94A3B8"}}>+{rec.backup.length-3}</span>}</div>)}
-                  {rec?.note&&<div style={{fontSize:9,color:"var(--text-muted)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>💬 {rec.note}</div>}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {/* MOBILE LIST */}
-      {isMobile&&(
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {Array.from({length:daysInMonth},(_,i)=>i+1).map(d=>{
-            const key=toKey(curYear,curMonth,d);const type=getDayType(curYear,curMonth,d);const rec=data[key];
-            const isToday=key===todayKey;const isSel=selectedKeys.has(key);
-            const isPast=new Date(curYear,curMonth,d)<new Date(today.getFullYear(),today.getMonth(),today.getDate());
-            const uncovered=!isSel&&type!=="holiday"&&!rec?.service;
-            const dow=new Date(curYear,curMonth,d).getDay();
-            const holidayName=getH(curYear)[key];const hasService=!!rec?.service;
-            let borderColor="var(--border)";
-            if(isSel)borderColor="var(--cs-blue)";
-            else if(type==="holiday")borderColor="#F5B8BF";
-            else if(uncovered)borderColor="#F97316";
-            else if(hasService)borderColor="var(--cs-blue-mid)";
-            let bg="var(--bg-white)";
-            if(isSel)bg="var(--cs-blue-light)";
-            else if(type==="holiday")bg="var(--cs-red-light)";
-            else if(type==="weekend")bg="var(--cs-blue-light)";
-            const dateColor=isToday?"var(--cs-blue)":type==="holiday"?"var(--cs-red)":type==="weekend"?"var(--cs-blue)":"var(--text-primary)";
-            return(
-              <div key={key} id={isToday?"today-row":undefined} onClick={()=>handleCellClick(key)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,background:bg,border:`1.5px solid ${borderColor}`,opacity:isPast?0.45:1,filter:isPast?"grayscale(30%)":"none",cursor:"pointer",boxShadow:isToday?"0 0 0 3px rgba(0,101,189,0.15)":"none"}}>
-                <div style={{minWidth:44,display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
-                  <span style={{fontSize:24,fontWeight:800,lineHeight:1,color:dateColor}}>{d}</span>
-                  <span style={{fontSize:11,fontWeight:600,color:"var(--text-muted)",textTransform:"uppercase",letterSpacing:"0.5px",marginTop:2}}>{DOW_LABELS[dow]}</span>
-                </div>
-                <div style={{width:2,height:40,borderRadius:2,background:borderColor,flexShrink:0,opacity:0.5}}/>
-                <div style={{flex:1,minWidth:0}}>
-                  {holidayName&&<div style={{fontSize:11,fontWeight:600,color:"var(--cs-red)",marginBottom:3}}>{holidayName}</div>}
-                  {hasService?(
-                    <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:rec?.backup?.length>0||rec?.note?5:0}}>
-                      <Avatar name={rec.service} size={24}/>
-                      <span style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>{rec.service}</span>
-                    </div>
-                  ):(
-                    <span style={{fontSize:14,color:"var(--text-muted)",fontStyle:"italic"}}>volný</span>
-                  )}
-                  {rec?.backup?.length>0&&(
-                    <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap",marginTop:2}}>
-                      <span style={{fontSize:11,color:"var(--text-muted)"}}>záloha:</span>
-                      {rec.backup.map(n=>(<span key={n} style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:12,fontWeight:600,color:"var(--cs-blue)"}}><Avatar name={n} size={14}/>{n}</span>))}
-                    </div>
-                  )}
-                  {rec?.note&&<div style={{fontSize:12,color:"var(--text-muted)",marginTop:3,fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>💬 {rec.note}</div>}
-                </div>
-                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flexShrink:0}}>
-                  {isSel&&<span style={{width:22,height:22,borderRadius:"50%",background:"var(--cs-blue)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"#fff",fontWeight:700}}>✓</span>}
-                  {!isSel&&hasService&&<span style={{width:10,height:10,borderRadius:"50%",background:"var(--cs-green)",display:"block"}}/>}
-                  {!isSel&&uncovered&&type!=="holiday"&&<span style={{fontSize:16}}>⚠️</span>}
-                </div>
+      {/* ABSENCE MODAL */}
+      {absModal&&(()=>{
+        const isAbsMulti=absModal.multi;
+        const[,mm,dd]=isAbsMulti?["","",""]:(absModal.dateKey.split("-"));
+        return(<div className="overlay" onClick={e=>{if(e.target===e.currentTarget)setAbsModal(null);}}>
+          <div className="modal">
+            <div className="modal-drag"></div>
+            <div className="modal-header">
+              <div>
+                {isAbsMulti?(<><div className="modal-date">Hromadná nepřítomnost</div><span className="type-badge multi">📅 {absModal.keys.length} dní · celý tým</span><div style={{fontSize:11,color:"var(--text-muted)",marginTop:4}}>{absModal.keys.sort().map(k=>{const[,mm2,dd2]=k.split("-");return`${parseInt(dd2)}.${parseInt(mm2)}.`;}).join("  ·  ")}</div></>)
+                :(<><div className="modal-date">{parseInt(dd)}. {MONTHS[parseInt(mm)-1]}</div><div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}><Avatar name={absModal.member} size={28}/><span style={{fontSize:16,fontWeight:700}}>{absModal.member}</span></div></>)}
               </div>
-            );
-          })}
-        </div>
-      )}
-
-      {renderModal()}
+              <button className="close-btn" onClick={()=>setAbsModal(null)}>✕</button>
+            </div>
+            <div className="half-panel" style={{borderColor:amType?absType(amType)?.color:"var(--border)"}}>
+              <div className="half-panel-title">
+                <span style={{background:"var(--cs-blue)",color:"#fff",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5}}>DOPOLEDNE</span>
+                {amType&&<span style={{fontSize:12,color:absType(amType)?.color,fontWeight:600}}>{absType(amType)?.icon} {absType(amType)?.label}</span>}
+              </div>
+              <div className="abs-type-grid">
+                {ABSENCE_TYPES.map(t=>(<button key={t.id} className="abs-type-btn" onClick={()=>setAmType(amType===t.id?null:t.id)} style={{borderColor:amType===t.id?t.color:undefined,background:amType===t.id?t.bg:undefined,color:amType===t.id?t.color:undefined}}>{t.icon} {t.label}</button>))}
+                <button className={`abs-type-btn none-btn${!amType?" active":""}`} onClick={()=>setAmType(null)}>✕ Přítomen / vymazat</button>
+              </div>
+              {amType&&<><label className="field-label" style={{marginTop:4}}>Komentář</label><textarea className="textarea" rows={1} placeholder="Volitelný komentář..." value={amNote} onChange={e=>setAmNote(e.target.value)}/></>}
+            </div>
+            <div className="half-panel" style={{borderColor:pmType?absType(pmType)?.color:"var(--border)"}}>
+              <div className="half-panel-title">
+                <span style={{background:"var(--text-secondary)",color:"#fff",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5}}>ODPOLEDNE</span>
+                {pmType&&<span style={{fontSize:12,color:absType(pmType)?.color,fontWeight:600}}>{absType(pmType)?.icon} {absType(pmType)?.label}</span>}
+              </div>
+              <div className="abs-type-grid">
+                {ABSENCE_TYPES.map(t=>(<button key={t.id} className="abs-type-btn" onClick={()=>setPmType(pmType===t.id?null:t.id)} style={{borderColor:pmType===t.id?t.color:undefined,background:pmType===t.id?t.bg:undefined,color:pmType===t.id?t.color:undefined}}>{t.icon} {t.label}</button>))}
+                <button className={`abs-type-btn none-btn${!pmType?" active":""}`} onClick={()=>setPmType(null)}>✕ Přítomen / vymazat</button>
+              </div>
+              {pmType&&<><label className="field-label" style={{marginTop:4}}>Komentář</label><textarea className="textarea" rows={1} placeholder="Volitelný komentář..." value={pmNote} onChange={e=>setPmNote(e.target.value)}/></>}
+            </div>
+            {isAbsMulti&&<div style={{background:"var(--cs-blue-light)",border:"1px solid var(--cs-blue-mid)",borderRadius:9,padding:"8px 12px",fontSize:12,color:"var(--cs-blue)",marginBottom:10}}>Nastavení se zapíše pro <strong>celý tým</strong> ve vybraných {absModal.keys.length} dnech.</div>}
+            <div className="modal-footer"><div/>
+              <div style={{display:"flex",gap:8}}>
+                <button className="btn-cancel" onClick={()=>setAbsModal(null)}>Zrušit</button>
+                <button className="btn-save" onClick={saveAbsence}>{isAbsMulti?`Uložit ${absModal.keys.length} dní`:"Uložit"}</button>
+              </div>
+            </div>
+          </div>
+        </div>);
+      })()}
     </div>
   );
 }
