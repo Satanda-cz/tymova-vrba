@@ -92,7 +92,6 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
 .abs-half.am{border-bottom:1px dashed var(--border);}
 .abs-badge{display:inline-flex;align-items:center;gap:2px;padding:1px 4px;border-radius:4px;font-size:9px;font-weight:700;white-space:nowrap;line-height:1.4;overflow:hidden;max-width:70px;}
 .half-label{font-size:8px;color:var(--text-muted);font-weight:600;}
-.abs-sel-row{background:rgba(0,101,189,0.08)!important;outline:2px solid var(--cs-blue);outline-offset:-1px;}
 .abs-day-card{border-radius:12px;background:var(--bg-white);border:1px solid var(--border);overflow:hidden;margin-bottom:8px;}
 .abs-day-header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);}
 .abs-day-header.today-r{background:var(--cs-blue-light);}
@@ -245,18 +244,6 @@ function App(){
   const [appMode,setAppMode]=useState("sluzba");
   const [modal,setModal]=useState(null);
   const [modalMode,setModalMode]=useState("write");
-  const [absModal,setAbsModal]=useState(null);
-  const [amType,setAmType]=useState(null);
-  const [amNote,setAmNote]=useState("");
-  const [pmType,setPmType]=useState(null);
-  const [pmNote,setPmNote]=useState("");
-  const [absSelecting,setAbsSelecting]=useState(false);
-  const [absSelectedKeys,setAbsSelectedKeys]=useState(new Set());
-  const [userName,setUserName]=useState("");
-  const [loginScreen,setLoginScreen]=useState(true);
-  const [loginInput,setLoginInput]=useState("");
-  const [passInput,setPassInput]=useState("");
-  const [passError,setPassError]=useState(false);
   const [svcInput,setSvcInput]=useState("");
   const [noteInput,setNoteInput]=useState("");
   const [backupInput,setBackupInput]=useState("");
@@ -266,6 +253,18 @@ function App(){
   const [removeChecked,setRemoveChecked]=useState(new Set());
   const [showSvcDrop,setShowSvcDrop]=useState(false);
   const [showBackupDrop,setShowBackupDrop]=useState(false);
+  const [absModal,setAbsModal]=useState(null);
+  const [amType,setAmType]=useState(null);
+  const [amNote,setAmNote]=useState("");
+  const [pmType,setPmType]=useState(null);
+  const [pmNote,setPmNote]=useState("");
+  const [absSelecting,setAbsSelecting]=useState(false);
+  const [absSelCells,setAbsSelCells]=useState([]);
+  const [userName,setUserName]=useState("");
+  const [loginScreen,setLoginScreen]=useState(true);
+  const [loginInput,setLoginInput]=useState("");
+  const [passInput,setPassInput]=useState("");
+  const [passError,setPassError]=useState(false);
   const [isMobile,setIsMobile]=useState(window.innerWidth<640);
   const headerRef=useRef(null);
   const [headerH,setHeaderH]=useState(0);
@@ -291,8 +290,7 @@ function App(){
         else svc[k]=v;
       }
       setSvcData(svc);setAbsData(abs);
-    }catch(e){console.error(e);}
-    finally{setLoading(false);}
+    }catch(e){console.error(e);}finally{setLoading(false);}
   }
 
   async function persistSvcKey(key,val){setSaving(true);try{if(val===null)await dbDel(key);else await dbSet(key,val);}catch(e){}setSaving(false);}
@@ -334,36 +332,51 @@ function App(){
   function closeModal(){setModal(null);setSelectedKeys(new Set());setSelecting(false);setShowSvcDrop(false);setShowBackupDrop(false);}
   function cancelSelection(){setSelectedKeys(new Set());setSelecting(false);}
 
-  function handleAbsRowClick(dateKey){if(!absSelecting)return;setAbsSelectedKeys(prev=>{const nx=new Set(prev);nx.has(dateKey)?nx.delete(dateKey):nx.add(dateKey);return nx;});}
-  function openAbsModal(dateKey,member,e){
-    if(e)e.stopPropagation();if(absSelecting)return;
+  function isCellSelected(dateKey,member,half){return absSelCells.some(c=>c.dateKey===dateKey&&c.member===member&&c.half===half);}
+  function toggleAbsCell(dateKey,member,half,e){
+    if(e)e.stopPropagation();
+    setAbsSelCells(prev=>{const idx=prev.findIndex(c=>c.dateKey===dateKey&&c.member===member&&c.half===half);if(idx>=0)return prev.filter((_,i)=>i!==idx);return [...prev,{dateKey,member,half}];});
+  }
+  function openAbsModal(dateKey,member,half,e){
+    if(absSelecting){toggleAbsCell(dateKey,member,half,e);return;}
+    if(e)e.stopPropagation();
     const rec=absData[dateKey]?.[member]||{};
     setAmType(rec.am?.type||null);setAmNote(rec.am?.note||"");
     setPmType(rec.pm?.type||null);setPmNote(rec.pm?.note||"");
     setAbsModal({dateKey,member,multi:false});
   }
   function openAbsMultiModal(){
-    if(absSelectedKeys.size===0)return;
-    setAmType(null);setAmNote("");setPmType(null);setPmNote("");
-    setAbsModal({dateKey:null,member:null,multi:true,keys:[...absSelectedKeys]});
+    if(absSelCells.length===0)return;
+    setAmType(null);setAmNote("");
+    setAbsModal({multi:true,cells:absSelCells});
   }
   async function saveAbsence(){
     const nd={...absData};
-    const keys=absModal.multi?absModal.keys:[absModal.dateKey];
-    for(const dateKey of keys){
-      if(!nd[dateKey])nd[dateKey]={};
-      const members=absModal.multi?TEAM:[absModal.member];
-      for(const member of members){
-        const entry={};
-        if(amType)entry.am={type:amType,note:amNote.trim()};
-        if(pmType)entry.pm={type:pmType,note:pmNote.trim()};
+    if(absModal.multi){
+      const affectedDays=new Set(absModal.cells.map(c=>c.dateKey));
+      for(const cell of absModal.cells){
+        const{dateKey,member,half}=cell;
+        if(!nd[dateKey])nd[dateKey]={};
         const day={...nd[dateKey]};
-        if(Object.keys(entry).length===0)delete day[member];else day[member]=entry;
+        const existing=day[member]||{};
+        const updated={...existing};
+        if(amType)updated[half]={type:amType,note:amNote.trim()};else delete updated[half];
+        if(!updated.am&&!updated.pm)delete day[member];else day[member]=updated;
         if(Object.keys(day).length===0)delete nd[dateKey];else nd[dateKey]=day;
       }
+      for(const dateKey of affectedDays){await persistAbsKey(dateKey,nd[dateKey]||null);}
+    }else{
+      const{dateKey,member}=absModal;
+      if(!nd[dateKey])nd[dateKey]={};
+      const day={...nd[dateKey]};
+      const entry={};
+      if(amType)entry.am={type:amType,note:amNote.trim()};
+      if(pmType)entry.pm={type:pmType,note:pmNote.trim()};
+      if(Object.keys(entry).length===0)delete day[member];else day[member]=entry;
+      if(Object.keys(day).length===0)delete nd[dateKey];else nd[dateKey]=day;
       await persistAbsKey(dateKey,nd[dateKey]||null);
     }
-    setAbsData(nd);setAbsModal(null);setAbsSelectedKeys(new Set());setAbsSelecting(false);
+    setAbsData(nd);setAbsModal(null);setAbsSelCells([]);setAbsSelecting(false);
   }
 
   const daysInMonth=new Date(curYear,curMonth+1,0).getDate();
@@ -492,14 +505,13 @@ function App(){
         </div>
         <div style={{marginBottom:10}}>
           {absSelecting?(<div className="sel-toolbar">
-            <div><div className="sel-info">Vybráno {absSelectedKeys.size} {absSelectedKeys.size===1?"den":absSelectedKeys.size>=2&&absSelectedKeys.size<=4?"dny":"dní"}</div><div className="sel-hint">Klikejte na řádky dnů pro výběr</div></div>
-            <button className="sel-act-btn" disabled={absSelectedKeys.size===0} onClick={openAbsMultiModal}>Upravit vybrané →</button>
-            <button className="sel-cancel-btn" onClick={()=>{setAbsSelecting(false);setAbsSelectedKeys(new Set());}}>Zrušit</button>
+            <div><div className="sel-info">Vybráno {absSelCells.length} polo{absSelCells.length===1?"vka":"vek"}</div><div className="sel-hint">Klikejte na libovolné dop./odp. buňky</div></div>
+            <button className="sel-act-btn" disabled={absSelCells.length===0} onClick={openAbsMultiModal}>Upravit vybrané →</button>
+            <button className="sel-cancel-btn" onClick={()=>{setAbsSelecting(false);setAbsSelCells([]);}}>Zrušit</button>
           </div>):(
-            <div style={{display:"flex",justifyContent:"flex-end"}}><button className="today-btn" style={{background:"var(--cs-blue)",color:"#fff",border:"none",padding:"0 14px",height:34,fontSize:13,fontWeight:600}} onClick={()=>setAbsSelecting(true)}>☑ Vybrat více dní</button></div>
+            <div style={{display:"flex",justifyContent:"flex-end"}}><button className="today-btn" style={{background:"var(--cs-blue)",color:"#fff",border:"none",padding:"0 14px",height:34,fontSize:13,fontWeight:600}} onClick={()=>setAbsSelecting(true)}>☑ Vybrat více buněk</button></div>
           )}
         </div>
-
         {!isMobile&&(
           <div className="abs-wrap">
             <div className="abs-scroll">
@@ -523,38 +535,37 @@ function App(){
                     const isToday=dateKey===todayKey;const isYesterday=dateKey===yesterdayKey;
                     const isWeekend=type==="weekend";const isHoliday=type==="holiday";
                     const isPast=dateKey<todayKey;const dow=new Date(y,mm-1,dd).getDay();
-                    const holidayName=getH(y)[dateKey];const isSel=absSelectedKeys.has(dateKey);
+                    const holidayName=getH(y)[dateKey];
                     let dayCls="abs-td-day";
                     if(isToday)dayCls+=" today-r";else if(isHoliday)dayCls+=" holiday-r";else if(isWeekend)dayCls+=" weekend-r";
                     if(isPast)dayCls+=" past-r";
                     const dateColor=isToday?"var(--cs-blue)":isHoliday?"var(--cs-red)":isWeekend?"var(--cs-blue)":"var(--text-primary)";
                     return(
                       <tr key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":undefined}
-                        className={isSel?"abs-sel-row":""}
-                        style={isToday?{outline:"3px solid var(--cs-blue)",outlineOffset:"-1px",position:"relative",zIndex:1}:{}}
-                        onClick={()=>handleAbsRowClick(dateKey)}>
-                        <td className={dayCls} style={{cursor:absSelecting?"pointer":"default"}}>
+                        style={isToday?{outline:"3px solid var(--cs-blue)",outlineOffset:"-1px",position:"relative",zIndex:1}:{}}>
+                        <td className={dayCls}>
                           <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
                             <span style={{fontSize:15,fontWeight:800,color:dateColor,lineHeight:1}}>{dd}</span>
                             <span style={{fontSize:9,fontWeight:600,color:"var(--text-muted)",textTransform:"uppercase"}}>{DOW_LABELS[dow]}</span>
                             <span style={{fontSize:8,color:"var(--text-muted)"}}>{MONTHS_SHORT[mm-1]}</span>
                             {isToday&&<span style={{fontSize:8,background:"var(--cs-blue)",color:"#fff",borderRadius:4,padding:"2px 5px",marginTop:2,fontWeight:800,letterSpacing:0.5}}>● DNES</span>}
-                            {isSel&&!isToday&&<span style={{fontSize:8,background:"var(--cs-blue)",color:"#fff",borderRadius:4,padding:"1px 4px",marginTop:2,fontWeight:700}}>✓</span>}
                             {holidayName&&<span style={{fontSize:7,color:"var(--cs-red)",fontWeight:600,textAlign:"center",lineHeight:1.1,marginTop:1,maxWidth:52,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{holidayName}</span>}
                           </div>
                         </td>
                         {TEAM.map(member=>{
                           const rec=absData[dateKey]?.[member]||{};
+                          const amSel=absSelCells.some(c=>c.dateKey===dateKey&&c.member===member&&c.half==="am");
+                          const pmSel=absSelCells.some(c=>c.dateKey===dateKey&&c.member===member&&c.half==="pm");
                           let cellCls="abs-member-td";
                           if(isToday)cellCls+=" today-r";else if(isHoliday)cellCls+=" holiday-r";else if(isWeekend)cellCls+=" weekend-r";
                           if(isPast)cellCls+=" past-r";
                           return(
                             <td key={member} className={cellCls}>
-                              <div className="abs-half am" onClick={e=>openAbsModal(dateKey,member,e)} style={rec.am?.type?{background:absType(rec.am.type)?.bg,cursor:"pointer"}:{cursor:absSelecting?"default":"pointer"}}>
-                                {rec.am?.type?renderBadge(rec.am.type):<span className="half-label">dop.</span>}
+                              <div className="abs-half am" onClick={e=>openAbsModal(dateKey,member,"am",e)} style={{background:amSel?"rgba(0,101,189,0.2)":rec.am?.type?absType(rec.am.type)?.bg:undefined,outline:amSel?"2px solid var(--cs-blue)":"none",outlineOffset:"-1px",cursor:"pointer"}}>
+                                {amSel?<span style={{fontSize:11,fontWeight:800,color:"var(--cs-blue)"}}>✓</span>:rec.am?.type?renderBadge(rec.am.type):<span className="half-label">dop.</span>}
                               </div>
-                              <div className="abs-half" onClick={e=>openAbsModal(dateKey,member,e)} style={rec.pm?.type?{background:absType(rec.pm.type)?.bg,cursor:"pointer"}:{cursor:absSelecting?"default":"pointer"}}>
-                                {rec.pm?.type?renderBadge(rec.pm.type):<span className="half-label">odp.</span>}
+                              <div className="abs-half" onClick={e=>openAbsModal(dateKey,member,"pm",e)} style={{background:pmSel?"rgba(0,101,189,0.2)":rec.pm?.type?absType(rec.pm.type)?.bg:undefined,outline:pmSel?"2px solid var(--cs-blue)":"none",outlineOffset:"-1px",cursor:"pointer"}}>
+                                {pmSel?<span style={{fontSize:11,fontWeight:800,color:"var(--cs-blue)"}}>✓</span>:rec.pm?.type?renderBadge(rec.pm.type):<span className="half-label">odp.</span>}
                               </div>
                             </td>
                           );
@@ -567,7 +578,6 @@ function App(){
             </div>
           </div>
         )}
-
         {isMobile&&(<div>
           {absDateKeys.map(dateKey=>{
             const[y,mm,dd]=dateKey.split("-").map(Number);
@@ -575,43 +585,48 @@ function App(){
             const isToday=dateKey===todayKey;const isYesterday=dateKey===yesterdayKey;
             const isWeekend=type==="weekend";const isHoliday=type==="holiday";
             const isPast=dateKey<todayKey;const dow=new Date(y,mm-1,dd).getDay();
-            const holidayName=getH(y)[dateKey];const isSel=absSelectedKeys.has(dateKey);
+            const holidayName=getH(y)[dateKey];
             let hdrCls="abs-day-header";
             if(isToday)hdrCls+=" today-r";else if(isHoliday)hdrCls+=" holiday-r";else if(isWeekend)hdrCls+=" weekend-r";
             if(isPast)hdrCls+=" past-r";
             const dateColor=isToday?"var(--cs-blue)":isHoliday?"var(--cs-red)":isWeekend?"var(--cs-blue)":"var(--text-primary)";
-            return(<div key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":undefined}
-              className="abs-day-card"
-              style={isToday?{border:"2px solid var(--cs-blue)",boxShadow:"0 0 0 3px rgba(0,101,189,0.15)"}:isSel?{border:"2px solid var(--cs-blue)"}:{}}>
-              <div className={hdrCls} onClick={()=>handleAbsRowClick(dateKey)} style={{cursor:absSelecting?"pointer":"default"}}>
-                <div style={{display:"flex",flexDirection:"column",alignItems:"center",minWidth:42}}>
-                  <span style={{fontSize:22,fontWeight:800,lineHeight:1,color:dateColor}}>{dd}</span>
-                  <span style={{fontSize:10,fontWeight:600,color:"var(--text-muted)",textTransform:"uppercase"}}>{DOW_LABELS[dow]}</span>
-                  <span style={{fontSize:9,color:"var(--text-muted)"}}>{MONTHS_SHORT[mm-1]}</span>
-                </div>
-                <div style={{flex:1}}>
-                  {isToday&&<span style={{fontSize:11,fontWeight:700,color:"var(--cs-blue)",display:"block"}}>● Dnes</span>}
-                  {holidayName&&<div style={{fontSize:11,fontWeight:600,color:"var(--cs-red)"}}>{holidayName}</div>}
-                </div>
-                {isSel&&<span style={{fontSize:18}}>✓</span>}
-              </div>
-              {TEAM.map(member=>{
-                const rec=absData[dateKey]?.[member]||{};
-                return(<div key={member} className={`abs-member-row${isPast?" past-r":""}`}>
-                  <div className="abs-member-info"><Avatar name={member} size={24}/><span style={{fontSize:12,fontWeight:600,color:"var(--text-primary)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:70}}>{member}</span></div>
-                  <div className="abs-halves">
-                    <div className="abs-half-mob am-mob" onClick={e=>openAbsModal(dateKey,member,e)} style={rec.am?.type?{background:absType(rec.am.type)?.bg}:{}}>
-                      <span className="abs-half-label">Dop.</span>
-                      {rec.am?.type?(<div style={{display:"flex",alignItems:"center",gap:4,flex:1}}>{renderBadge(rec.am.type)}</div>):<span style={{fontSize:10,color:"var(--text-muted)"}}>přítomen</span>}
-                    </div>
-                    <div className="abs-half-mob" onClick={e=>openAbsModal(dateKey,member,e)} style={rec.pm?.type?{background:absType(rec.pm.type)?.bg}:{}}>
-                      <span className="abs-half-label">Odp.</span>
-                      {rec.pm?.type?(<div style={{display:"flex",alignItems:"center",gap:4,flex:1}}>{renderBadge(rec.pm.type)}</div>):<span style={{fontSize:10,color:"var(--text-muted)"}}>přítomen</span>}
-                    </div>
+            return(
+              <div key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":undefined}
+                className="abs-day-card"
+                style={isToday?{border:"2px solid var(--cs-blue)",boxShadow:"0 0 0 3px rgba(0,101,189,0.15)"}:{}}>
+                <div className={hdrCls}>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",minWidth:42}}>
+                    <span style={{fontSize:22,fontWeight:800,lineHeight:1,color:dateColor}}>{dd}</span>
+                    <span style={{fontSize:10,fontWeight:600,color:"var(--text-muted)",textTransform:"uppercase"}}>{DOW_LABELS[dow]}</span>
+                    <span style={{fontSize:9,color:"var(--text-muted)"}}>{MONTHS_SHORT[mm-1]}</span>
                   </div>
-                </div>);
-              })}
-            </div>);
+                  <div style={{flex:1}}>
+                    {isToday&&<span style={{fontSize:11,fontWeight:700,color:"var(--cs-blue)",display:"block"}}>● Dnes</span>}
+                    {holidayName&&<div style={{fontSize:11,fontWeight:600,color:"var(--cs-red)"}}>{holidayName}</div>}
+                  </div>
+                </div>
+                {TEAM.map(member=>{
+                  const rec=absData[dateKey]?.[member]||{};
+                  const amSel=absSelCells.some(c=>c.dateKey===dateKey&&c.member===member&&c.half==="am");
+                  const pmSel=absSelCells.some(c=>c.dateKey===dateKey&&c.member===member&&c.half==="pm");
+                  return(
+                    <div key={member} className={`abs-member-row${isPast?" past-r":""}`}>
+                      <div className="abs-member-info"><Avatar name={member} size={24}/><span style={{fontSize:12,fontWeight:600,color:"var(--text-primary)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:70}}>{member}</span></div>
+                      <div className="abs-halves">
+                        <div className="abs-half-mob am-mob" onClick={e=>openAbsModal(dateKey,member,"am",e)} style={{background:amSel?"rgba(0,101,189,0.2)":rec.am?.type?absType(rec.am.type)?.bg:undefined,outline:amSel?"2px solid var(--cs-blue)":"none"}}>
+                          <span className="abs-half-label">Dop.</span>
+                          {amSel?<span style={{fontSize:12,fontWeight:800,color:"var(--cs-blue)"}}>✓</span>:rec.am?.type?(<div style={{display:"flex",alignItems:"center",gap:4}}>{renderBadge(rec.am.type)}</div>):<span style={{fontSize:10,color:"var(--text-muted)"}}>přítomen</span>}
+                        </div>
+                        <div className="abs-half-mob" onClick={e=>openAbsModal(dateKey,member,"pm",e)} style={{background:pmSel?"rgba(0,101,189,0.2)":rec.pm?.type?absType(rec.pm.type)?.bg:undefined,outline:pmSel?"2px solid var(--cs-blue)":"none"}}>
+                          <span className="abs-half-label">Odp.</span>
+                          {pmSel?<span style={{fontSize:12,fontWeight:800,color:"var(--cs-blue)"}}>✓</span>:rec.pm?.type?(<div style={{display:"flex",alignItems:"center",gap:4}}>{renderBadge(rec.pm.type)}</div>):<span style={{fontSize:10,color:"var(--text-muted)"}}>přítomen</span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
           })}
         </div>)}
       </>)}
@@ -704,38 +719,62 @@ function App(){
             <div className="modal-drag"></div>
             <div className="modal-header">
               <div>
-                {isAbsMulti?(<><div className="modal-date">Hromadná nepřítomnost</div><span className="type-badge multi">📅 {absModal.keys.length} dní · celý tým</span><div style={{fontSize:11,color:"var(--text-muted)",marginTop:4}}>{absModal.keys.sort().map(k=>{const[,mm2,dd2]=k.split("-");return`${parseInt(dd2)}.${parseInt(mm2)}.`;}).join("  ·  ")}</div></>)
-                :(<><div className="modal-date">{parseInt(dd)}. {MONTHS[parseInt(mm)-1]}</div><div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}><Avatar name={absModal.member} size={28}/><span style={{fontSize:16,fontWeight:700}}>{absModal.member}</span></div></>)}
+                {isAbsMulti?(
+                  <>
+                    <div className="modal-date">Hromadná úprava</div>
+                    <span className="type-badge multi">📅 {absModal.cells.length} polo{absModal.cells.length===1?"vka":"vek"}</span>
+                    <div style={{fontSize:11,color:"var(--text-muted)",marginTop:6,lineHeight:1.8,maxHeight:80,overflowY:"auto"}}>
+                      {absModal.cells.map((c,i)=><span key={i} style={{display:"inline-block",marginRight:6}}><strong>{c.member}</strong> {parseInt(c.dateKey.split("-")[2])}.{parseInt(c.dateKey.split("-")[1])}.{c.half==="am"?" dop.":" odp."}</span>)}
+                    </div>
+                  </>
+                ):(
+                  <><div className="modal-date">{parseInt(dd)}. {MONTHS[parseInt(mm)-1]}</div><div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}><Avatar name={absModal.member} size={28}/><span style={{fontSize:16,fontWeight:700}}>{absModal.member}</span></div></>
+                )}
               </div>
               <button className="close-btn" onClick={()=>setAbsModal(null)}>✕</button>
             </div>
-            <div className="half-panel" style={{borderColor:amType?absType(amType)?.color:"var(--border)"}}>
-              <div className="half-panel-title">
-                <span style={{background:"var(--cs-blue)",color:"#fff",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5}}>DOPOLEDNE</span>
-                {amType&&<span style={{fontSize:12,color:absType(amType)?.color,fontWeight:600}}>{absType(amType)?.icon} {absType(amType)?.label}</span>}
+            {isAbsMulti?(
+              <div className="half-panel" style={{borderColor:amType?absType(amType)?.color:"var(--cs-blue)"}}>
+                <div className="half-panel-title">
+                  <span style={{background:"var(--cs-blue)",color:"#fff",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5}}>TYP NEPŘÍTOMNOSTI</span>
+                  {amType&&<span style={{fontSize:12,color:absType(amType)?.color,fontWeight:600}}>{absType(amType)?.icon} {absType(amType)?.label}</span>}
+                </div>
+                <div className="abs-type-grid">
+                  {ABSENCE_TYPES.map(t=>(<button key={t.id} className="abs-type-btn" onClick={()=>setAmType(amType===t.id?null:t.id)} style={{borderColor:amType===t.id?t.color:undefined,background:amType===t.id?t.bg:undefined,color:amType===t.id?t.color:undefined}}>{t.icon} {t.label}</button>))}
+                  <button className={`abs-type-btn none-btn${!amType?" active":""}`} onClick={()=>setAmType(null)}>✕ Vymazat</button>
+                </div>
+                {amType&&<><label className="field-label" style={{marginTop:4}}>Komentář</label><textarea className="textarea" rows={1} placeholder="Volitelný komentář..." value={amNote} onChange={e=>setAmNote(e.target.value)}/></>}
               </div>
-              <div className="abs-type-grid">
-                {ABSENCE_TYPES.map(t=>(<button key={t.id} className="abs-type-btn" onClick={()=>setAmType(amType===t.id?null:t.id)} style={{borderColor:amType===t.id?t.color:undefined,background:amType===t.id?t.bg:undefined,color:amType===t.id?t.color:undefined}}>{t.icon} {t.label}</button>))}
-                <button className={`abs-type-btn none-btn${!amType?" active":""}`} onClick={()=>setAmType(null)}>✕ Přítomen / vymazat</button>
-              </div>
-              {amType&&<><label className="field-label" style={{marginTop:4}}>Komentář</label><textarea className="textarea" rows={1} placeholder="Volitelný komentář..." value={amNote} onChange={e=>setAmNote(e.target.value)}/></>}
-            </div>
-            <div className="half-panel" style={{borderColor:pmType?absType(pmType)?.color:"var(--border)"}}>
-              <div className="half-panel-title">
-                <span style={{background:"var(--text-secondary)",color:"#fff",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5}}>ODPOLEDNE</span>
-                {pmType&&<span style={{fontSize:12,color:absType(pmType)?.color,fontWeight:600}}>{absType(pmType)?.icon} {absType(pmType)?.label}</span>}
-              </div>
-              <div className="abs-type-grid">
-                {ABSENCE_TYPES.map(t=>(<button key={t.id} className="abs-type-btn" onClick={()=>setPmType(pmType===t.id?null:t.id)} style={{borderColor:pmType===t.id?t.color:undefined,background:pmType===t.id?t.bg:undefined,color:pmType===t.id?t.color:undefined}}>{t.icon} {t.label}</button>))}
-                <button className={`abs-type-btn none-btn${!pmType?" active":""}`} onClick={()=>setPmType(null)}>✕ Přítomen / vymazat</button>
-              </div>
-              {pmType&&<><label className="field-label" style={{marginTop:4}}>Komentář</label><textarea className="textarea" rows={1} placeholder="Volitelný komentář..." value={pmNote} onChange={e=>setPmNote(e.target.value)}/></>}
-            </div>
-            {isAbsMulti&&<div style={{background:"var(--cs-blue-light)",border:"1px solid var(--cs-blue-mid)",borderRadius:9,padding:"8px 12px",fontSize:12,color:"var(--cs-blue)",marginBottom:10}}>Nastavení se zapíše pro <strong>celý tým</strong> ve vybraných {absModal.keys.length} dnech.</div>}
+            ):(
+              <>
+                <div className="half-panel" style={{borderColor:amType?absType(amType)?.color:"var(--border)"}}>
+                  <div className="half-panel-title">
+                    <span style={{background:"var(--cs-blue)",color:"#fff",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5}}>DOPOLEDNE</span>
+                    {amType&&<span style={{fontSize:12,color:absType(amType)?.color,fontWeight:600}}>{absType(amType)?.icon} {absType(amType)?.label}</span>}
+                  </div>
+                  <div className="abs-type-grid">
+                    {ABSENCE_TYPES.map(t=>(<button key={t.id} className="abs-type-btn" onClick={()=>setAmType(amType===t.id?null:t.id)} style={{borderColor:amType===t.id?t.color:undefined,background:amType===t.id?t.bg:undefined,color:amType===t.id?t.color:undefined}}>{t.icon} {t.label}</button>))}
+                    <button className={`abs-type-btn none-btn${!amType?" active":""}`} onClick={()=>setAmType(null)}>✕ Přítomen / vymazat</button>
+                  </div>
+                  {amType&&<><label className="field-label" style={{marginTop:4}}>Komentář</label><textarea className="textarea" rows={1} placeholder="Volitelný komentář..." value={amNote} onChange={e=>setAmNote(e.target.value)}/></>}
+                </div>
+                <div className="half-panel" style={{borderColor:pmType?absType(pmType)?.color:"var(--border)"}}>
+                  <div className="half-panel-title">
+                    <span style={{background:"var(--text-secondary)",color:"#fff",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:5}}>ODPOLEDNE</span>
+                    {pmType&&<span style={{fontSize:12,color:absType(pmType)?.color,fontWeight:600}}>{absType(pmType)?.icon} {absType(pmType)?.label}</span>}
+                  </div>
+                  <div className="abs-type-grid">
+                    {ABSENCE_TYPES.map(t=>(<button key={t.id} className="abs-type-btn" onClick={()=>setPmType(pmType===t.id?null:t.id)} style={{borderColor:pmType===t.id?t.color:undefined,background:pmType===t.id?t.bg:undefined,color:pmType===t.id?t.color:undefined}}>{t.icon} {t.label}</button>))}
+                    <button className={`abs-type-btn none-btn${!pmType?" active":""}`} onClick={()=>setPmType(null)}>✕ Přítomen / vymazat</button>
+                  </div>
+                  {pmType&&<><label className="field-label" style={{marginTop:4}}>Komentář</label><textarea className="textarea" rows={1} placeholder="Volitelný komentář..." value={pmNote} onChange={e=>setPmNote(e.target.value)}/></>}
+                </div>
+              </>
+            )}
             <div className="modal-footer"><div/>
               <div style={{display:"flex",gap:8}}>
                 <button className="btn-cancel" onClick={()=>setAbsModal(null)}>Zrušit</button>
-                <button className="btn-save" onClick={saveAbsence}>{isAbsMulti?`Uložit ${absModal.keys.length} dní`:"Uložit"}</button>
+                <button className="btn-save" onClick={saveAbsence}>{isAbsMulti?`Uložit ${absModal.cells.length} polo${absModal.cells.length===1?"vku":"vek"}`:"Uložit"}</button>
               </div>
             </div>
           </div>
