@@ -194,6 +194,19 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
 .toast-close:hover{color:var(--text-primary);}
 .toast-progress{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 14px 14px;background:var(--cs-blue);animation:toastProgress 6s linear forwards;}
 @keyframes toastProgress{from{width:100%;}to{width:0;}}
+.changes-modal-overlay{position:fixed;inset:0;background:rgba(10,20,50,0.5);display:flex;align-items:center;justify-content:center;z-index:1100;backdrop-filter:blur(4px);padding:16px;}
+.changes-modal{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.changes-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.changes-modal-title{font-size:18px;font-weight:700;color:var(--text-primary);}
+.changes-modal-subtitle{font-size:12px;color:var(--text-muted);margin-top:3px;}
+.changes-modal-body{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;}
+.changes-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:6px;margin-top:4px;}
+.change-row{border-radius:10px;border:1px solid var(--border);overflow:hidden;}
+.change-row-header{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#F8FAFC;}
+.change-row-date{font-size:13px;font-weight:700;color:var(--cs-blue);min-width:50px;}
+.change-row-detail{font-size:12px;color:var(--text-secondary);padding:6px 12px 8px;line-height:1.6;}
+.toast-detail-btn{margin-top:5px;background:none;border:1px solid var(--cs-blue-mid);border-radius:6px;color:var(--cs-blue);font-size:11px;font-weight:600;padding:2px 8px;cursor:pointer;font-family:inherit;}
+.toast-detail-btn:hover{background:var(--cs-blue-light);}
 </style>
 </head>
 <body>
@@ -287,6 +300,8 @@ function App(){
   const prevSvcRef=useRef(null);
   const prevAbsRef=useRef(null);
   const toastIdRef=useRef(0);
+  const [changesModal,setChangesModal]=useState(null);
+  const notifAskedRef=useRef(false);
 
   useEffect(()=>{const fn=()=>setIsMobile(window.innerWidth<640);window.addEventListener("resize",fn);return()=>window.removeEventListener("resize",fn);},[]);
   useEffect(()=>{if(headerRef.current)setHeaderH(headerRef.current.offsetHeight);},[isMobile,loginScreen,appMode]);
@@ -312,10 +327,71 @@ function App(){
   useEffect(()=>{
     const n=localStorage.getItem("vrba_name");const p=localStorage.getItem("vrba_pass");
     if(n)setLoginInput(n);if(p)setPassInput(p);
+    // pouze přednačteme data pro UI (bez porovnání – to se děje v doLogin)
     loadData();
   },[]);
 
-  async function loadData(isRefresh=false){
+  function requestNotifPermission(){
+    if(!("Notification" in window)||notifAskedRef.current)return;
+    notifAskedRef.current=true;
+    if(Notification.permission==="default")Notification.requestPermission();
+  }
+
+  function sendWebNotif(title,body){
+    if(!("Notification" in window)||Notification.permission!=="granted")return;
+    if(document.visibilityState==="visible")return; // jen když je záložka na pozadí
+    try{new Notification(title,{body,icon:"https://satanda-cz.github.io/tymova-vrba/favicon.ico"});}catch(e){}
+  }
+
+  function buildChangeSummary(oldSvc,newSvc,oldAbs,newAbs){
+    const svcChanges=[];
+    for(const k of new Set([...Object.keys(oldSvc||{}),...Object.keys(newSvc||{})])){
+      const ov=oldSvc?.[k]||null; const nv=newSvc?.[k]||null;
+      if(JSON.stringify(ov)===JSON.stringify(nv))continue;
+      const[,m,d]=k.split("-");
+      const label=`${parseInt(d)}.${parseInt(m)}.`;
+      const parts=[];
+      if((ov?.service||"")!==(nv?.service||"")){
+        if(nv?.service&&!ov?.service)parts.push(`služba → ${nv.service}`);
+        else if(!nv?.service&&ov?.service)parts.push(`služba odebrána (byl ${ov.service})`);
+        else parts.push(`služba: ${ov.service} → ${nv.service}`);
+      }
+      const ob=new Set(ov?.backup||[]); const nb=new Set(nv?.backup||[]);
+      const added=[...nb].filter(x=>!ob.has(x)); const removed=[...ob].filter(x=>!nb.has(x));
+      if(added.length)parts.push(`záloha +${added.join(", ")}`);
+      if(removed.length)parts.push(`záloha −${removed.join(", ")}`);
+      if((ov?.note||"")!==(nv?.note||"")){
+        if(nv?.note)parts.push(`pozn.: "${nv.note}"`);
+        else parts.push(`pozn. odstraněna`);
+      }
+      if(parts.length)svcChanges.push({key:k,label,detail:parts.join(" · ")});
+    }
+    const absChanges=[];
+    const absTypeLabel=id=>{const t=ABSENCE_TYPES.find(x=>x.id===id);return t?`${t.icon} ${t.label}`:id;};
+    for(const k of new Set([...Object.keys(oldAbs||{}),...Object.keys(newAbs||{})])){
+      const ov=oldAbs?.[k]||{}; const nv=newAbs?.[k]||{};
+      if(JSON.stringify(ov)===JSON.stringify(nv))continue;
+      const[,m,d]=k.split("-");
+      const label=`${parseInt(d)}.${parseInt(m)}.`;
+      const members=new Set([...Object.keys(ov),...Object.keys(nv)]);
+      const parts=[];
+      for(const member of members){
+        const om=ov[member]||{}; const nm=nv[member]||{};
+        for(const half of["am","pm"]){
+          const ot=om[half]?.type||null; const nt=nm[half]?.type||null;
+          if(ot===nt)continue;
+          const halfLabel=half==="am"?"dop.":"odp.";
+          if(nt&&!ot)parts.push(`${member} ${halfLabel} → ${absTypeLabel(nt)}`);
+          else if(!nt&&ot)parts.push(`${member} ${halfLabel} zrušeno (byl ${absTypeLabel(ot)})`);
+          else parts.push(`${member} ${halfLabel}: ${absTypeLabel(ot)} → ${absTypeLabel(nt)}`);
+        }
+      }
+      if(parts.length)absChanges.push({key:k,label,detail:parts.join(", ")});
+    }
+    return{svcChanges,absChanges};
+  }
+
+  async function loadData(isRefresh=false,snapshotSvc=null,snapshotAbs=null){
     if(!isRefresh)setLoading(true);
     try{
       const d=await dbGet();
@@ -324,38 +400,37 @@ function App(){
         if(k.startsWith("abs2_"))newAbs[k.slice(5)]=v;
         else newSvc[k]=v;
       }
-      if(isRefresh){
-        const oldSvc=prevSvcRef.current;
-        const oldAbs=prevAbsRef.current;
-        if(oldSvc!==null&&oldAbs!==null){
-          const svcChanges=[];
-          for(const k of new Set([...Object.keys(oldSvc),...Object.keys(newSvc)])){
-            if(JSON.stringify(oldSvc[k]||null)!==JSON.stringify(newSvc[k]||null))svcChanges.push(k);
-          }
-          const absChanges=[];
-          for(const k of new Set([...Object.keys(oldAbs),...Object.keys(newAbs)])){
-            if(JSON.stringify(oldAbs[k]||null)!==JSON.stringify(newAbs[k]||null))absChanges.push(k);
-          }
-          const total=svcChanges.length+absChanges.length;
-          if(total>0){
-            const fmt=k=>{const[,m,d]=k.split("-");return`${parseInt(d)}.${parseInt(m)}.`;};
-            const parts=[];
-            if(svcChanges.length>0)parts.push(`Služba: ${svcChanges.slice(0,3).map(fmt).join(", ")}${svcChanges.length>3?` +${svcChanges.length-3}`:""}`);
-            if(absChanges.length>0)parts.push(`Nepřítomnost: ${absChanges.slice(0,3).map(fmt).join(", ")}${absChanges.length>3?` +${absChanges.length-3}`:""}`);
-            addToast("🔔",`${total} ${total===1?"změna":"změny"} od kolegy`,parts.join(" · "));
+      const compareSvc=snapshotSvc||prevSvcRef.current;
+      const compareAbs=snapshotAbs||prevAbsRef.current;
+      if(compareSvc!==null&&compareAbs!==null){
+        const{svcChanges,absChanges}=buildChangeSummary(compareSvc,newSvc,compareAbs,newAbs);
+        const total=svcChanges.length+absChanges.length;
+        if(total>0){
+          const fmt=k=>{const[,m,d]=k.split("-");return`${parseInt(d)}.${parseInt(m)}.`;};
+          const shortParts=[];
+          if(svcChanges.length)shortParts.push(`Služba: ${svcChanges.slice(0,2).map(c=>c.label).join(", ")}${svcChanges.length>2?` +${svcChanges.length-2}`:""}`);
+          if(absChanges.length)shortParts.push(`Nepřítomnost: ${absChanges.slice(0,2).map(c=>c.label).join(", ")}${absChanges.length>2?` +${absChanges.length-2}`:""}`);
+          const toastMsg=shortParts.join(" · ");
+          if(snapshotSvc){
+            // přihlášení – zobraz modal se souhrnem
+            setChangesModal({svcChanges,absChanges,fromLogin:true});
+          }else{
+            addToast("🔔",`${total} ${total===1?"změna":"změny"} od kolegy`,toastMsg,{svcChanges,absChanges});
+            sendWebNotif(`Týmová vrba – ${total} ${total===1?"změna":"změny"}`,toastMsg);
           }
         }
       }
       prevSvcRef.current=newSvc;
       prevAbsRef.current=newAbs;
       setSvcData(newSvc);setAbsData(newAbs);
+      saveSnapshot(newSvc,newAbs);
     }catch(e){console.error(e);}finally{if(!isRefresh)setLoading(false);}
   }
 
-  function addToast(icon,title,msg){
+  function addToast(icon,title,msg,changes=null){
     const id=++toastIdRef.current;
-    setToasts(prev=>[...prev,{id,icon,title,msg,leaving:false}]);
-    setTimeout(()=>dismissToast(id),6000);
+    setToasts(prev=>[...prev,{id,icon,title,msg,changes,leaving:false}]);
+    setTimeout(()=>dismissToast(id),8000);
   }
   function dismissToast(id){
     setToasts(prev=>prev.map(t=>t.id===id?{...t,leaving:true}:t));
@@ -368,11 +443,33 @@ function App(){
   const prevMonth=()=>{if(curMonth===0){setCurYear(y=>y-1);setCurMonth(11);}else setCurMonth(m=>m-1);};
   const nextMonth=()=>{if(curMonth===11){setCurYear(y=>y+1);setCurMonth(0);}else setCurMonth(m=>m+1);};
 
-  function doLogin(){
+  async function doLogin(){
     const n=loginInput.trim();if(!n)return;
     if(passInput.trim().toUpperCase()!=="DAR"){setPassError(true);return;}
     localStorage.setItem("vrba_name",n);localStorage.setItem("vrba_pass",passInput.trim());
     setUserName(n);setLoginScreen(false);
+    requestNotifPermission();
+    // načti snapshot z minulého použití
+    let snapSvc=null;let snapAbs=null;
+    try{
+      const ss=localStorage.getItem("vrba_snap_svc");
+      const sa=localStorage.getItem("vrba_snap_abs");
+      if(ss)snapSvc=JSON.parse(ss);
+      if(sa)snapAbs=JSON.parse(sa);
+    }catch(e){}
+    // pokud existuje snapshot, porovnej při načtení
+    if(snapSvc!==null&&snapAbs!==null){
+      loadData(false,snapSvc,snapAbs);
+    }else{
+      loadData();
+    }
+  }
+
+  function saveSnapshot(svc,abs){
+    try{
+      localStorage.setItem("vrba_snap_svc",JSON.stringify(svc));
+      localStorage.setItem("vrba_snap_abs",JSON.stringify(abs));
+    }catch(e){}
   }
 
   function handleCellClick(key){if(selecting){setSelectedKeys(prev=>{const nx=new Set(prev);nx.has(key)?nx.delete(key):nx.add(key);return nx;});}else{openDays([key]);}}
@@ -860,12 +957,49 @@ function App(){
           <div className="toast-body">
             <div className="toast-title">{t.title}</div>
             <div className="toast-msg">{t.msg}</div>
+            {t.changes&&<button className="toast-detail-btn" onClick={e=>{e.stopPropagation();setChangesModal(t.changes);dismissToast(t.id);}}>📋 Zobrazit detail</button>}
           </div>
           <button className="toast-close" onClick={e=>{e.stopPropagation();dismissToast(t.id);}}>✕</button>
           {!t.leaving&&<div className="toast-progress"></div>}
         </div>
       ))}
     </div>
+    {changesModal&&(
+      <div className="changes-modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setChangesModal(null);}}>
+        <div className="changes-modal">
+          <div className="changes-modal-header">
+            <div>
+              <div className="changes-modal-title">🔔 Změny od kolegy</div>
+              <div className="changes-modal-subtitle">{changesModal.fromLogin?"od posledního přihlášení":"od posledního refreshe"}</div>
+            </div>
+            <button className="close-btn" onClick={()=>setChangesModal(null)}>✕</button>
+          </div>
+          <div className="changes-modal-body">
+            {changesModal.svcChanges?.length>0&&(<div>
+              <div className="changes-section-title">📋 Služba</div>
+              {changesModal.svcChanges.map(c=>(
+                <div key={c.key} className="change-row">
+                  <div className="change-row-header"><span className="change-row-date">{c.label}</span></div>
+                  <div className="change-row-detail">{c.detail}</div>
+                </div>
+              ))}
+            </div>)}
+            {changesModal.absChanges?.length>0&&(<div>
+              <div className="changes-section-title">🏠 Nepřítomnost</div>
+              {changesModal.absChanges.map(c=>(
+                <div key={c.key} className="change-row">
+                  <div className="change-row-header"><span className="change-row-date">{c.label}</span></div>
+                  <div className="change-row-detail">{c.detail}</div>
+                </div>
+              ))}
+            </div>)}
+          </div>
+          <div style={{marginTop:16,display:"flex",justifyContent:"flex-end"}}>
+            <button className="btn-save" onClick={()=>setChangesModal(null)}>Zavřít</button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }
