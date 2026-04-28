@@ -179,6 +179,21 @@ body,#root{font-family:'Inter',system-ui,sans-serif;}
 .login-err{font-size:12px;color:var(--cs-red);min-height:18px;margin-bottom:6px;text-align:center;}
 .login-btn{width:100%;padding:12px;font-size:15px;border-radius:9px;border:none;background:var(--cs-blue);color:#fff;cursor:pointer;font-weight:700;font-family:inherit;}
 .divider{width:100%;height:1px;background:var(--border);margin:4px 0 16px;}
+.toast-container{position:fixed;bottom:24px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:340px;}
+@media(max-width:600px){.toast-container{left:12px;right:12px;bottom:16px;}}
+.toast{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:14px;background:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.18),0 2px 8px rgba(0,101,189,0.12);border:1px solid var(--border);animation:toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1);cursor:pointer;position:relative;overflow:hidden;}
+.toast:hover{box-shadow:0 10px 36px rgba(0,0,0,0.22);}
+.toast.leaving{animation:toastOut 0.3s ease forwards;}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(0.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0) scale(1);}to{opacity:0;transform:translateY(12px) scale(0.95);}}
+.toast-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
+.toast-body{flex:1;min-width:0;}
+.toast-title{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:3px;}
+.toast-msg{font-size:12px;color:var(--text-secondary);line-height:1.5;}
+.toast-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0;flex-shrink:0;line-height:1;}
+.toast-close:hover{color:var(--text-primary);}
+.toast-progress{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 14px 14px;background:var(--cs-blue);animation:toastProgress 6s linear forwards;}
+@keyframes toastProgress{from{width:100%;}to{width:0;}}
 </style>
 </head>
 <body>
@@ -268,11 +283,31 @@ function App(){
   const [isMobile,setIsMobile]=useState(window.innerWidth<640);
   const headerRef=useRef(null);
   const [headerH,setHeaderH]=useState(0);
+  const [toasts,setToasts]=useState([]);
+  const prevSvcRef=useRef(null);
+  const prevAbsRef=useRef(null);
+  const toastIdRef=useRef(0);
 
   useEffect(()=>{const fn=()=>setIsMobile(window.innerWidth<640);window.addEventListener("resize",fn);return()=>window.removeEventListener("resize",fn);},[]);
   useEffect(()=>{if(headerRef.current)setHeaderH(headerRef.current.offsetHeight);},[isMobile,loginScreen,appMode]);
   useEffect(()=>{if(isMobile&&!loginScreen&&appMode==="sluzba"){setTimeout(()=>{const el=document.getElementById("today-row");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});},300);};},[isMobile,loginScreen,appMode]);
-  useEffect(()=>{if(appMode==="nepritomnost"){setTimeout(()=>{const el=document.getElementById("abs-yesterday-row");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},250);};},[appMode]);
+  useEffect(()=>{
+    if(!loginScreen&&appMode==="nepritomnost"){
+      setTimeout(()=>{
+        if(isMobile){
+          const el=document.getElementById("abs-today-row");
+          if(el)el.scrollIntoView({behavior:"smooth",block:"start"});
+        }else{
+          const el=document.getElementById("abs-minus2-row")||document.getElementById("abs-today-row");
+          if(el)el.scrollIntoView({behavior:"smooth",block:"start"});
+        }
+      },150);
+    }
+  },[appMode,loginScreen,isMobile]);
+  useEffect(()=>{
+    const interval=setInterval(()=>{if(!loginScreen)loadData(true);},30000);
+    return()=>clearInterval(interval);
+  },[loginScreen]);
 
   useEffect(()=>{
     const n=localStorage.getItem("vrba_name");const p=localStorage.getItem("vrba_pass");
@@ -280,17 +315,51 @@ function App(){
     loadData();
   },[]);
 
-  async function loadData(){
-    setLoading(true);
+  async function loadData(isRefresh=false){
+    if(!isRefresh)setLoading(true);
     try{
       const d=await dbGet();
-      const svc={};const abs={};
+      const newSvc={};const newAbs={};
       for(const[k,v] of Object.entries(d)){
-        if(k.startsWith("abs2_"))abs[k.slice(5)]=v;
-        else svc[k]=v;
+        if(k.startsWith("abs2_"))newAbs[k.slice(5)]=v;
+        else newSvc[k]=v;
       }
-      setSvcData(svc);setAbsData(abs);
-    }catch(e){console.error(e);}finally{setLoading(false);}
+      if(isRefresh){
+        const oldSvc=prevSvcRef.current;
+        const oldAbs=prevAbsRef.current;
+        if(oldSvc!==null&&oldAbs!==null){
+          const svcChanges=[];
+          for(const k of new Set([...Object.keys(oldSvc),...Object.keys(newSvc)])){
+            if(JSON.stringify(oldSvc[k]||null)!==JSON.stringify(newSvc[k]||null))svcChanges.push(k);
+          }
+          const absChanges=[];
+          for(const k of new Set([...Object.keys(oldAbs),...Object.keys(newAbs)])){
+            if(JSON.stringify(oldAbs[k]||null)!==JSON.stringify(newAbs[k]||null))absChanges.push(k);
+          }
+          const total=svcChanges.length+absChanges.length;
+          if(total>0){
+            const fmt=k=>{const[,m,d]=k.split("-");return`${parseInt(d)}.${parseInt(m)}.`;};
+            const parts=[];
+            if(svcChanges.length>0)parts.push(`Služba: ${svcChanges.slice(0,3).map(fmt).join(", ")}${svcChanges.length>3?` +${svcChanges.length-3}`:""}`);
+            if(absChanges.length>0)parts.push(`Nepřítomnost: ${absChanges.slice(0,3).map(fmt).join(", ")}${absChanges.length>3?` +${absChanges.length-3}`:""}`);
+            addToast("🔔",`${total} ${total===1?"změna":"změny"} od kolegy`,parts.join(" · "));
+          }
+        }
+      }
+      prevSvcRef.current=newSvc;
+      prevAbsRef.current=newAbs;
+      setSvcData(newSvc);setAbsData(newAbs);
+    }catch(e){console.error(e);}finally{if(!isRefresh)setLoading(false);}
+  }
+
+  function addToast(icon,title,msg){
+    const id=++toastIdRef.current;
+    setToasts(prev=>[...prev,{id,icon,title,msg,leaving:false}]);
+    setTimeout(()=>dismissToast(id),6000);
+  }
+  function dismissToast(id){
+    setToasts(prev=>prev.map(t=>t.id===id?{...t,leaving:true}:t));
+    setTimeout(()=>setToasts(prev=>prev.filter(t=>t.id!==id)),320);
   }
 
   async function persistSvcKey(key,val){setSaving(true);try{if(val===null)await dbDel(key);else await dbSet(key,val);}catch(e){}setSaving(false);}
@@ -533,6 +602,7 @@ function App(){
                     const[y,mm,dd]=dateKey.split("-").map(Number);
                     const type=getDayType(y,mm-1,dd);
                     const isToday=dateKey===todayKey;const isYesterday=dateKey===yesterdayKey;
+                    const minus2Date=new Date(today);minus2Date.setDate(minus2Date.getDate()-2);const isMinus2=dateKey===keyFromDate(minus2Date);
                     const isWeekend=type==="weekend";const isHoliday=type==="holiday";
                     const isPast=dateKey<todayKey;const dow=new Date(y,mm-1,dd).getDay();
                     const holidayName=getH(y)[dateKey];
@@ -541,7 +611,7 @@ function App(){
                     if(isPast)dayCls+=" past-r";
                     const dateColor=isToday?"var(--cs-blue)":isHoliday?"var(--cs-red)":isWeekend?"var(--cs-blue)":"var(--text-primary)";
                     return(
-                      <tr key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":undefined}
+                      <tr key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":isMinus2?"abs-minus2-row":undefined}
                         style={isToday?{outline:"3px solid var(--cs-blue)",outlineOffset:"-1px",position:"relative",zIndex:1}:{}}>
                         <td className={dayCls}>
                           <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
@@ -583,6 +653,7 @@ function App(){
             const[y,mm,dd]=dateKey.split("-").map(Number);
             const type=getDayType(y,mm-1,dd);
             const isToday=dateKey===todayKey;const isYesterday=dateKey===yesterdayKey;
+            const minus2DateM=new Date(today);minus2DateM.setDate(minus2DateM.getDate()-2);const isMinus2M=dateKey===keyFromDate(minus2DateM);
             const isWeekend=type==="weekend";const isHoliday=type==="holiday";
             const isPast=dateKey<todayKey;const dow=new Date(y,mm-1,dd).getDay();
             const holidayName=getH(y)[dateKey];
@@ -591,7 +662,7 @@ function App(){
             if(isPast)hdrCls+=" past-r";
             const dateColor=isToday?"var(--cs-blue)":isHoliday?"var(--cs-red)":isWeekend?"var(--cs-blue)":"var(--text-primary)";
             return(
-              <div key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":undefined}
+              <div key={dateKey} id={isToday?"abs-today-row":isYesterday?"abs-yesterday-row":isMinus2M?"abs-minus2-row":undefined}
                 className="abs-day-card"
                 style={isToday?{border:"2px solid var(--cs-blue)",boxShadow:"0 0 0 3px rgba(0,101,189,0.15)"}:{}}>
                 <div className={hdrCls}>
@@ -780,6 +851,20 @@ function App(){
           </div>
         </div>);
       })()}
+    </div>
+      <div className="toast-container">
+        {toasts.map(t=>(
+          <div key={t.id} className={`toast${t.leaving?" leaving":""}`} onClick={()=>dismissToast(t.id)}>
+            <span className="toast-icon">{t.icon}</span>
+            <div className="toast-body">
+              <div className="toast-title">{t.title}</div>
+              <div className="toast-msg">{t.msg}</div>
+            </div>
+            <button className="toast-close" onClick={e=>{e.stopPropagation();dismissToast(t.id);}}>✕</button>
+            {!t.leaving&&<div className="toast-progress"></div>}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
