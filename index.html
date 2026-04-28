@@ -495,6 +495,7 @@ function App(){
   );
 
   return (
+    <>
     <div className="root">
       <div className={`header${isMobile?" header-sticky":""}`} ref={headerRef}>
         <div className="brand">
@@ -852,20 +853,20 @@ function App(){
         </div>);
       })()}
     </div>
-      <div className="toast-container">
-        {toasts.map(t=>(
-          <div key={t.id} className={`toast${t.leaving?" leaving":""}`} onClick={()=>dismissToast(t.id)}>
-            <span className="toast-icon">{t.icon}</span>
-            <div className="toast-body">
-              <div className="toast-title">{t.title}</div>
-              <div className="toast-msg">{t.msg}</div>
-            </div>
-            <button className="toast-close" onClick={e=>{e.stopPropagation();dismissToast(t.id);}}>✕</button>
-            {!t.leaving&&<div className="toast-progress"></div>}
+    <div className="toast-container">
+      {toasts.map(t=>(
+        <div key={t.id} className={`toast${t.leaving?" leaving":""}`} onClick={()=>dismissToast(t.id)}>
+          <span className="toast-icon">{t.icon}</span>
+          <div className="toast-body">
+            <div className="toast-title">{t.title}</div>
+            <div className="toast-msg">{t.msg}</div>
           </div>
-        ))}
-      </div>
+          <button className="toast-close" onClick={e=>{e.stopPropagation();dismissToast(t.id);}}>✕</button>
+          {!t.leaving&&<div className="toast-progress"></div>}
+        </div>
+      ))}
     </div>
+    </>
   );
 }
 
